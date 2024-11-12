@@ -20,10 +20,17 @@ jobs:
         with:
           node-version: '18'
 
-      # 3. 의존성 설치
+      # 3. 의존성 설치 (캐싱 포함)
+      - name: Cache node_modules
+        uses: actions/cache@v2
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
-        run: |
-          npm install
+        run: npm install
 
       # 4. Expo 앱 빌드 (웹용으로)
       - name: Build Expo app
@@ -33,29 +40,24 @@ jobs:
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKER_USERNAME }}  # GitHub Secrets에서 Docker Hub 사용자명
-          password: ${{ secrets.DOCKER_PASSWORD }}  # GitHub Secrets에서 Docker Hub 비밀번호
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       # 6. Docker 이미지 빌드 및 푸시
       - name: Build and Push Docker Image
         run: |
-          docker build -t seungwoo08/anywhere:latest 
-          docker push seungwoo08/anywhere:latest     
+          docker build -t seungwoo08/anywhere:latest .
+          docker push seungwoo08/anywhere:latest
 
       # 7. AWS EC2에 배포
       - name: Deploy to AWS EC2
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.EC2_HOST }}             # GitHub Secrets에서 EC2 호스트 IP 또는 DNS
-          username: ${{ secrets.EC2_USER }}         # GitHub Secrets에서 EC2 사용자명
-          key: ${{ secrets.EC2_SSH_KEY }}           # GitHub Secrets에서 EC2 SSH 키
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-       
-            docker pull seungwoo08/anywhere:latest    
-
-        
+            docker pull seungwoo08/anywhere:latest
             docker stop anywhere || true
             docker rm anywhere || true
-
-         
-            docker run -d -p 80:3000 --name anywhere seungwoo08/anywhere:latest
+            docker run -d -p 80:3000 --name anywhere --restart unless-stopped seungwoo08/anywhere:latest
