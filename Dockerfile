@@ -14,6 +14,8 @@ RUN npm install
 # 프로젝트 파일을 모두 복사
 COPY . .
 
+RUN npx expo start --tunnel
+
 # Expo 앱이 실행될 포트를 노출
 EXPOSE 19000 19001 19002
 
