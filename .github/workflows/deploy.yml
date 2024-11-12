@@ -23,12 +23,11 @@ jobs:
       # 3. 의존성 설치
       - name: Install dependencies
         run: |
-          npm install -g expo-cli
           npm install
 
       # 4. Expo 앱 빌드 (웹용으로)
       - name: Build Expo app
-        run: expo build:web
+        run: npx expo export:web
 
       # 5. Docker 로그인 (Docker Hub 사용 시)
       - name: Log in to Docker Hub
