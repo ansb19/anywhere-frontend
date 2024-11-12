@@ -1,5 +1,5 @@
 # Expo 프로젝트를 위한 Node.js 이미지 사용
-FROM node:18
+FROM node:lts
 
 # 작업 디렉터리를 /app으로 설정
 WORKDIR /app
@@ -15,8 +15,10 @@ RUN npm install
 COPY . .
 
 # Expo 앱이 실행될 포트를 노출
-EXPOSE 3000
-EXPOSE 3001
-EXPOSE 3002
+EXPOSE 19000
+EXPOSE 19001
+EXPOSE 19002
+
+
 # Expo 프로젝트를 시작하는 명령
 CMD ["expo", "start", "--tunnel"]
