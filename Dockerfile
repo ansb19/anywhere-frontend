@@ -15,9 +15,9 @@ RUN npm install
 COPY . .
 
 # Expo 앱이 실행될 포트를 노출
-EXPOSE 19000
-EXPOSE 19001
-EXPOSE 19002
+EXPOSE 3000
+
+
 
 
 # Expo 프로젝트를 시작하는 명령
