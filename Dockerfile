@@ -2,7 +2,7 @@
 FROM node:lts
 
 # 작업 디렉터리를 /app으로 설정
-WORKDIR /app
+WORKDIR /usr/src/app
 
 # Expo 프로젝트의 package.json과 package-lock.json 파일을 복사
 COPY package*.json ./
