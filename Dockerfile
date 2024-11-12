@@ -15,7 +15,7 @@ RUN npm install
 COPY . .
 
 # RUN npx expo start --tunnel
-
+RUN npx expo install expo-constants
 RUN expo build:web
  
 
