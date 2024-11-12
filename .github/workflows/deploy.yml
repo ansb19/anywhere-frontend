@@ -56,4 +56,4 @@ jobs:
             docker pull seungwoo08/anywhere:latest
             docker stop anywhere || true
             docker rm anywhere || true
-            docker run -d -p 80:3000 --name anywhere --restart unless-stopped seungwoo08/anywhere:latest
+            docker run -d -p 19000:3000 --name anywhere seungwoo08/anywhere:latest
