@@ -56,4 +56,4 @@ jobs:
             docker stop anywhere || true
             docker rm anywhere || true
             docker pull seungwoo08/anywhere:latest
-            docker run -d -p 19000-19002:19000-19002 --name anywhere seungwoo08/anywhere:latest
+            docker run -d -p 80:80 --name anywhere seungwoo08/anywhere:latest
