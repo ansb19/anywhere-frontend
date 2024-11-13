@@ -7,13 +7,7 @@ WORKDIR /usr/src/app
 # Expo 프로젝트의 package.json과 package-lock.json 파일을 복사
 COPY package*.json ./
 
-# install global packages
-ENV NPM_CONFIG_PREFIX=/home/node/.npm-global
-ENV PATH /home/node/.npm-global/bin:$PATH
-RUN npm i --unsafe-perm -g npm@latest expo-cli@latest
-RUN apt-get update && apt-get install -y qemu-user-static
-#We need to install this inorder to start a tunnel on the docker conatiner
-RUN yarn add @expo/ngrok
+RUN npm install -g expo-cli @expo/ngrok
 RUN npm install
 
 # 프로젝트 파일을 모두 복사
