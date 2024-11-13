@@ -8,9 +8,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # 프로젝트의 의존성 설치
-RUN npm install -g expo-cli
 RUN npm install
-RUN npx expo doctor --fix-dependencies
 
 # 프로젝트 파일을 모두 복사
 COPY . .
