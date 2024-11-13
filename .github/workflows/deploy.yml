@@ -71,4 +71,4 @@ jobs:
               seungwoo08/anywhere:latest
             
             # Expo 앱 시작
-            docker exec anywhere expo start --tunnel
+            docker exec anywhere npx expo start --tunnel

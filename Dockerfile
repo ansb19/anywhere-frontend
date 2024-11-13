@@ -1,5 +1,5 @@
 # Expo 프로젝트를 위한 Node.js 이미지 사용
-FROM node:lts
+FROM node:latest
 
 # 작업 디렉터리를 /app으로 설정
 WORKDIR /usr/src/app
@@ -8,7 +8,9 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # 프로젝트의 의존성 설치
-RUN npm install -g expo-cli
+ENV NPM_CONFIG_PREFIX=/home/node/.npm-global
+ENV PATH /home/node/.npm-global/bin:$PATH
+RUN npm i --unsafe-perm -g npm@latest expo-cli@latest
 RUN npm install
 
 # 프로젝트 파일을 모두 복사
@@ -19,7 +21,7 @@ COPY . .
 EXPOSE 19000 19001 19002
 
 # Expo 프로젝트를 시작하는 명령
-CMD ["expo", "start","--tunnel"]
+CMD ["npx","expo", "start","--tunnel"]
 
 
 # RUN npx expo start --tunnel
