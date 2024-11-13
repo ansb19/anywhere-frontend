@@ -14,8 +14,19 @@ RUN npm install
 # 프로젝트 파일을 모두 복사
 COPY . .
 
+RUN npm start
+
+# Expo 앱이 실행될 포트를 노출
+EXPOSE 19000 19001 19002
+
+# Expo 프로젝트를 시작하는 명령
+CMD ["expo", "start"]
+
+
 # RUN npx expo start --tunnel
+
 # RUN npx expo install expo-constants
+
 # RUN expo build:web
  
 # RUN apt-get update && apt-get install -y nginx
@@ -26,11 +37,4 @@ COPY . .
 
 # CMD ["nginx", "-g", "daemon off;"]
 
-
-
-# Expo 앱이 실행될 포트를 노출
-EXPOSE 19000 19001 19002
-
-# Expo 프로젝트를 시작하는 명령
-CMD ["expo", "start", "--tunnel"]
 # CMD ["expo", "start", "--no-dev", "--minify"]
