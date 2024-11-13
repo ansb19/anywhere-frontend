@@ -15,25 +15,22 @@ RUN npm install
 COPY . .
 
 # RUN npx expo start --tunnel
-RUN npx expo install expo-constants
-RUN expo build:web
+# RUN npx expo install expo-constants
+# RUN expo build:web
  
+# RUN apt-get update && apt-get install -y nginx
 
-RUN apt-get update && apt-get install -y nginx
+# RUN mv /usr/src/app/web-build /var/www/html
 
+# EXPOSE 80
 
-RUN mv /usr/src/app/web-build /var/www/html
-
-
-EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
+# CMD ["nginx", "-g", "daemon off;"]
 
 
 
 # Expo 앱이 실행될 포트를 노출
-#EXPOSE 19000 19001 19002
+EXPOSE 19000 19001 19002
 
 # Expo 프로젝트를 시작하는 명령
-# CMD ["expo", "start", "--tunnel"]
-#CMD ["expo", "start", "--no-dev", "--minify"]
+CMD ["expo", "start", "--tunnel"]
+# CMD ["expo", "start", "--no-dev", "--minify"]
