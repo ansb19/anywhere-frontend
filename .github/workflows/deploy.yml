@@ -67,6 +67,7 @@ jobs:
               -p 19001:19001 \
               -p 19002:19002 \
               --name anywhere \
+              --memory="4g" \
               seungwoo08/anywhere:latest
             
             # Expo 앱 시작
