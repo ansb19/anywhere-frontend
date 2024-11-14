@@ -1,5 +1,5 @@
 # Expo 프로젝트를 위한 Node.js 이미지 사용
-FROM node:lts
+FROM node:latest
 
 # 작업 디렉터리를 /app으로 설정
 WORKDIR /usr/src/app
