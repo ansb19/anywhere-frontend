@@ -9,6 +9,8 @@ COPY package*.json ./
 
 # Install
 RUN npm install
+# Install Expo CLI and ngrok
+RUN npm install -g expo-cli @expo/ngrok
 
 # 프로젝트 파일을 모두 복사
 COPY . .
