@@ -12,38 +12,20 @@ jobs:
     steps:
       # 1. 코드 체크아웃
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
-      # 2. Node.js 환경 설정
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '18'
 
-      # 3. 의존성 설치 (캐싱 포함)
-      - name: Cache node_modules
-        uses: actions/cache@v2
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-node-
-
-      - name: Install dependencies
-        run: npm install
-
-      # 5. Docker 로그인 (Docker Hub 사용 시)
+      # 2. Docker 로그인 (Docker Hub 사용 시)
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      # 6. Docker 이미지 빌드 및 푸시
+      # 3. Docker 이미지 빌드 및 푸시
       - name: Build and Push Docker Image
         run: |
           docker build -t seungwoo08/anywhere:latest .
-          docker images
           docker push seungwoo08/anywhere:latest
 
       # 7. AWS EC2에 배포 및 앱 실행
@@ -66,9 +48,9 @@ jobs:
               -p 19000:19000 \
               -p 19001:19001 \
               -p 19002:19002 \
+              -p 19006:19006 \
+              -p 8081:8081 \
               --name anywhere \
-              --memory="4g" \
               seungwoo08/anywhere:latest
             
-            # Expo 앱 시작
-            docker exec anywhere expo start --tunnel
+            
