@@ -11,9 +11,7 @@ ENV EXPO_NO_INTERACTIVE=1
 
 # Install
 RUN npm install
-# Install Expo CLI and ngrok
-RUN yes | npm install -g @expo/ngrok@^4.1.0
-
+RUN npm install -g expo-cli
 
 # 프로젝트 파일을 모두 복사
 COPY . .
