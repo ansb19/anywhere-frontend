@@ -7,9 +7,13 @@ WORKDIR /usr/src/app
 # Expo 프로젝트의 package.json과 package-lock.json 파일을 복사
 COPY package*.json ./
 
+# 비대화형 모드 설정
+ENV EXPO_NO_INTERACTIVE=1
+
 # Install
 RUN npm install
 RUN npm install -g expo-cli
+RUN npm install -g -y @expo/ngrok@^4.1.0
 
 # 프로젝트 파일을 모두 복사
 COPY . .
