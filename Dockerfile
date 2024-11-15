@@ -7,12 +7,14 @@ WORKDIR /usr/src/app
 # Expo 프로젝트의 package.json과 package-lock.json 파일을 복사
 COPY package*.json ./
 
+
 ENV EXPO_NO_INTERACTIVE=1
 
 # Install
 RUN npm install
 # Install Expo CLI and ngrok
-RUN npm install -g @expo/ngrok@^4.1.0
+RUN yes | npm install -g @expo/ngrok@^4.1.0
+
 
 # 프로젝트 파일을 모두 복사
 COPY . .
@@ -21,4 +23,4 @@ COPY . .
 EXPOSE 19000 19001 19002 19006 8081
 
 # Expo 프로젝트를 시작하는 명령
-CMD ["npm", "run","web"]
+CMD ["npm", "run", "web"]
