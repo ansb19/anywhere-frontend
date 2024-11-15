@@ -1,3 +1,3 @@
 # Welcome to 승우 expo anyWhere 앱 👋
-안녕하세요.ddssssssss
+안녕하세요.ddssssssssss
 
