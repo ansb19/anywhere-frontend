@@ -12,7 +12,6 @@ ENV EXPO_NO_INTERACTIVE=1
 # Install
 RUN npm install
 
-
 # 프로젝트 파일을 모두 복사
 COPY . .
 
