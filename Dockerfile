@@ -10,11 +10,15 @@ COPY package*.json ./
 # Install
 RUN npm install
 
+RUN npm install -g serve
+
 # 프로젝트 파일을 모두 복사
 COPY . .
 
+RUN npm run build
+
 # Expo 앱이 실행될 포트를 노출
-EXPOSE 19000 19001 8081 19006 19002
+EXPOSE 3000
 
 # Expo 프로젝트를 시작하는 명령
-CMD ["npm", "run", "web"]
+CMD ["serve", "dist"]
