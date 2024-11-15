@@ -10,8 +10,6 @@ COPY package*.json ./
 # Install
 RUN npm install
 
-RUN npm install -g serve
-
 # 프로젝트 파일을 모두 복사
 COPY . .
 
@@ -21,4 +19,4 @@ RUN npm run build
 EXPOSE 3000
 
 # Expo 프로젝트를 시작하는 명령
-CMD ["serve", "dist"]
+CMD ["npm", "run", "start2"]
