@@ -24,8 +24,8 @@ jobs:
       # 3. Docker 이미지 빌드 및 푸시
       - name: Build and Push Docker Image
         run: |
-          docker build -t seungwoo08/anywhere:latest .
-          docker push seungwoo08/anywhere:latest
+          docker build -t seungwoo08/anywhere2:latest .
+          docker push seungwoo08/anywhere2:latest
 
       # 7. AWS EC2에 배포 및 앱 실행
       - name: Deploy and Start App on AWS EC2
@@ -36,13 +36,13 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             # 이전 컨테이너 중지 및 제거
-            docker stop anywhere || true
-            docker rm anywhere || true
+            docker stop anywhere2 || true
+            docker rm anywhere2 || true
             
             # 최신 이미지 가져오기
-            docker pull seungwoo08/anywhere:latest
+            docker pull seungwoo08/anywhere2:latest
             
             # Expo 앱을 EC2에서 실행하며 포트 매핑
-            docker run -d -p 3000:3000 --name anywhere seungwoo08/anywhere:latest
+            docker run -d -p 3000:3000 --name anywhere2 seungwoo08/anywhere2:latest
             
             
