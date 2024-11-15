@@ -7,7 +7,6 @@ WORKDIR /usr/src/app
 # Expo 프로젝트의 package.json과 package-lock.json 파일을 복사
 COPY package*.json ./
 
-
 ENV EXPO_NO_INTERACTIVE=1
 
 # Install
