@@ -19,4 +19,4 @@ COPY . .
 EXPOSE 3000 19000 19001 19002 19006 8081
 
 # Expo 프로젝트를 시작하는 명령
-CMD ["npm", "run", "web"]
+CMD ["npm", "run", "start"]
