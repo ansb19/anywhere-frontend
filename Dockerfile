@@ -10,9 +10,9 @@ COPY package*.json ./
 # Install
 RUN npm install
 # Install Expo CLI and ngrok
-RUN npm install -g @expo/ngrok@^4.1.0
+#    RUN npm install -g @expo/ngrok@^4.1.0
 
-ENV EXPO_NO_INTERACTIVE=1
+#    ENV EXPO_NO_INTERACTIVE=1
 
 # 프로젝트 파일을 모두 복사
 COPY . .
