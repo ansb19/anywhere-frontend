@@ -14,6 +14,11 @@ ENV EXPO_NO_INTERACTIVE=1
 RUN npm install
 # Install Expo CLI
 RUN npm install -g expo-cli
+# Install ngrok and set PATH
+RUN npm config set prefix /usr/local && npm install -g @expo/ngrok@4.1.0
+
+# Update PATH environment variable to include global modules
+ENV PATH=$PATH:/usr/local/bin:/usr/local/lib/node_modules
 
 # 프로젝트 파일을 모두 복사
 COPY . .
