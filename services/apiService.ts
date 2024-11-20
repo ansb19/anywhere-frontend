@@ -1,3 +1,5 @@
+import axiosInstance from '@/api/axiosInstance';
+import { requests } from '@/api/request';
 import axios from 'axios';
 
 const API_BASE_URL = process.env.BACKEND_SERVER // 백엔드 API의 기본 URL을 입력하세요.
@@ -17,8 +19,8 @@ export const createUser = async (
   
 ): Promise<{ success: boolean; data: {message:string, data:User} }> => {
   try {
-    const response = await axios.post<{ success: boolean; data: {message:string, data:User} }>(
-      `${API_BASE_URL}/user/sign`,
+    const response = await axiosInstance.post<{ success: boolean; data: {message:string, data:User} }>(
+      requests.userCreate,
       {
         account_email: 'test@example.com',
         nickname: 'testuser',
