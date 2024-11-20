@@ -17,9 +17,9 @@ export default function ProfileScreen() {
     try {
       const updatedInfo = await createUser( );
 
-      if (updatedInfo.data.message === 'success' && updatedInfo.data) {
+    
         setUserInfo(updatedInfo.data.data);
-      }
+     
    
       Alert.alert('Success', 'User name updated successfully');
     } catch (error) {
@@ -27,7 +27,7 @@ export default function ProfileScreen() {
     }
   };
   const handleGetUserInfo = async () => {
-   
+    Alert.alert('Success', 'User name updated successfully');
   };
 
   return (
