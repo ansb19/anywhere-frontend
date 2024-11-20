@@ -14,6 +14,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+
+        - name: Create .env file
+        run: |
+          echo BACKEND_SERVER=${{ secrets.BACKEND_SERVER }} >> .env
+          
+
       # 2. Docker 로그인 (Docker Hub 사용 시)
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -26,7 +32,7 @@ jobs:
         run: |
           docker build -t seungwoo08/anywhere2:latest .
           docker push seungwoo08/anywhere2:latest
-
+          
       # 7. AWS EC2에 배포 및 앱 실행
       - name: Deploy and Start App on AWS EC2
         uses: appleboy/ssh-action@master
