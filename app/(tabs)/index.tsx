@@ -10,6 +10,9 @@ import {
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+
+
 const shopData = [
   { title: '황금잉어빵', subtitle: '최근 방문 0명', distance: '0개 | 245m', id: 1 },
   { title: '달콤카페', subtitle: '최근 방문 5명', distance: '3개 | 320m', id: 2 },
@@ -23,6 +26,7 @@ const shopData = [
   { title: '푸드트럭 5번', subtitle: '최근 방문 0명', distance: '0개 | 500m', id: 10 },
 ];
 const HomeScreen = () => {
+  const router = useRouter();
   const [activeMenu, setActiveMenu] = useState<string>(''); // 활성화된 메뉴
   const [showNotification, setShowNotification] = useState<boolean>(false); // 알림 박스 표시 여부
   const [buttonLayout, setButtonLayout] = useState<{ x: number; y: number }>({ x: 0, y: 0 }); // 버튼 위치 저장
@@ -49,8 +53,8 @@ const HomeScreen = () => {
         <View style={styles.addressBar}>
           <TextInput
             style={styles.addressInput}
-            placeholder=""
-            placeholderTextColor="#333"
+            placeholder="여기에 주소를 입력해주세요"
+            placeholderTextColor="#aaa"
           />
           <TouchableOpacity style={styles.searchButton}>
             <Ionicons name="chevron-forward-outline" size={20} color="#333" />
@@ -160,8 +164,11 @@ const HomeScreen = () => {
           <Text style={styles.shopSubtitle}>{shop.subtitle}</Text>
           <View style={styles.shopFooter}>
             <Text style={styles.shopDistance}>{shop.distance}</Text>
-            <TouchableOpacity style={styles.visitButton}>
-              <Text style={styles.visitButtonText}>방문하기</Text>
+            <TouchableOpacity
+                style={styles.visitButton}
+                onPress={() => router.push(`./place-detail/${shop.id}`)} // 상세 페이지로 이동
+              >
+                <Text style={styles.visitButtonText}>방문하기</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -239,11 +246,8 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     borderColor: '#ff7f7f',
-    borderWidth: 1,
-    elevation: 5, // 그림자 효과
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+  
+   
   },
   triangle: {
     position: 'absolute',

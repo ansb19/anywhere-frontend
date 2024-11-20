@@ -8,7 +8,7 @@ const NicknameScreen = () => {
 
   const handleNicknameSubmit = () => {
     // 닉네임 검증 로직 추가 가능
-    router.push("/(tabs)"); // 메인 탭 네비게이션으로 이동
+    router.replace("/(tabs)"); // 메인 탭 네비게이션으로 이동
   };
   return (
     <View style={styles.container}>

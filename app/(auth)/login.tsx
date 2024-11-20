@@ -8,7 +8,7 @@ const LoginScreen = () => {
 
   const handleLogin = () => {
     // 로그인 검증 로직 (예: 이메일 검증)
-    router.push("./nickname"); // 닉네임 작성 화면으로 이동
+    router.replace("./nickname"); // 닉네임 작성 화면으로 이동
   };
   return (
     <View style={styles.container}>

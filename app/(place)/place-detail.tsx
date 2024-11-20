@@ -2,15 +2,29 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
+import { useRouter,useLocalSearchParams } from 'expo-router';
+
 
 export default function PlaceDetailScreen() {
+  const router = useRouter();
+  const local = useLocalSearchParams();
+
+  // 실제 데이터 기반으로 디테일 렌더링
+  const shopData = {
+    1: { title: '황금잉어빵', description: '맛있는 잉어빵을 판매하는 곳입니다.' },
+    2: { title: '달콤카페', description: '분위기 좋은 카페입니다.' },
+    3: { title: '바삭바삭 핫도그', description: '바삭한 핫도그를 판매하는 곳입니다.' },
+    4: { title: '따끈한 호떡', description: '달콤한 호떡으로 유명한 곳입니다.' },
+  };
+
+  
   return (
     <ScrollView style={styles.container}>
       {/* Header Section */}
       <View style={styles.header}>
         <Text style={styles.logo}>🍞</Text>
         <View>
-          <Text style={styles.title}>황금잉어빵</Text>
+          <Text style={styles.title}>황금잉어빵{local.id}</Text>
           <Text style={styles.subtitle}>최근 방문 0명이 방문 성공</Text>
         </View>
       </View>
@@ -191,5 +205,9 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     fontSize: 16,
+  },
+  errorText: {
+    fontSize: 18,
+    color: 'red',
   },
 });
