@@ -1,202 +1,325 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity,Button, TextInput, ScrollView, StyleSheet , Dimensions  } from 'react-native';
-import { useRouter } from 'expo-router';
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
-console.log(SCREEN_WIDTH)
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
+  Image,
+  Dimensions,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+const shopData = [
+  { title: '황금잉어빵', subtitle: '최근 방문 0명', distance: '0개 | 245m', id: 1 },
+  { title: '달콤카페', subtitle: '최근 방문 5명', distance: '3개 | 320m', id: 2 },
+  { title: '바삭바삭 핫도그', subtitle: '최근 방문 2명', distance: '2개 | 100m', id: 3 },
+  { title: '따끈한 호떡', subtitle: '최근 방문 8명', distance: '5개 | 500m', id: 4 },
+  { title: '멜팅아이스크림', subtitle: '최근 방문 3명', distance: '1개 | 210m', id: 5 },
+  { title: '푸드트럭 1번', subtitle: '최근 방문 10명', distance: '6개 | 150m', id: 6 },
+  { title: '푸드트럭 2번', subtitle: '최근 방문 1명', distance: '1개 | 400m', id: 7 },
+  { title: '푸드트럭 3번', subtitle: '최근 방문 7명', distance: '4개 | 180m', id: 8 },
+  { title: '푸드트럭 4번', subtitle: '최근 방문 9명', distance: '2개 | 300m', id: 9 },
+  { title: '푸드트럭 5번', subtitle: '최근 방문 0명', distance: '0개 | 500m', id: 10 },
+];
+const HomeScreen = () => {
+  const [activeMenu, setActiveMenu] = useState<string>(''); // 활성화된 메뉴
+  const [showNotification, setShowNotification] = useState<boolean>(false); // 알림 박스 표시 여부
+  const [buttonLayout, setButtonLayout] = useState<{ x: number; y: number }>({ x: 0, y: 0 }); // 버튼 위치 저장
 
-const HomeScreen: React.FC = () => {
-  const [selectedStoreType, setSelectedStoreType] = useState<string | null>(null);
-  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>([]);
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
-  const [openingTime, setOpeningTime] = useState<string>('');
-  const [closingTime, setClosingTime] = useState<string>('');
+  const handleMenuPress = (menu: string) => {
+    setActiveMenu(menu);
 
-  const storeTypes: string[] = ['길거리', '매장', '편의점'];
-  const paymentMethods: string[] = ['현금', '카드', '계좌이체'];
-  const days: string[] = ['월', '화', '수', '목', '금', '토', '일'];
-  const router = useRouter();
-  const togglePaymentMethod = (method: string) => {
-    setSelectedPaymentMethods((prev) =>
-      prev.includes(method)
-        ? prev.filter((item) => item !== method)
-        : [...prev, method]
-    );
-  };
+    if (menu === 'recent') {
+      // 최근 활동 클릭 시 알림 표시
+      setShowNotification(true);
 
-  const toggleDay = (day: string) => {
-    setSelectedDays((prev) =>
-      prev.includes(day) ? prev.filter((item) => item !== day) : [...prev, day]
-    );
+      // 5초 후 알림 숨김
+      setTimeout(() => {
+        setShowNotification(false);
+      }, 5000);
+    }
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-     
-     
-      <Text style={styles.header}>가게 제보</Text> 
-
-      <Text style={styles.label}>가게형태 (선택)</Text>
-     
-      <View style={styles.optionsContainer}>
-        {storeTypes.map((type) => (
-          <TouchableOpacity
-            key={type}
-            style={[
-              styles.option,
-              selectedStoreType === type && styles.selectedOption,
-            ]}
-            onPress={() => setSelectedStoreType(type)}
-          >
-            <Text style={styles.optionText}>{type}</Text>
+    <View style={styles.container}>
+      {/* 상단 콘텐츠 */}
+      <View style={styles.topContent}>
+        {/* 주소 입력 바 */}
+        <View style={styles.addressBar}>
+          <TextInput
+            style={styles.addressInput}
+            placeholder=""
+            placeholderTextColor="#333"
+          />
+          <TouchableOpacity style={styles.searchButton}>
+            <Ionicons name="chevron-forward-outline" size={20} color="#333" />
           </TouchableOpacity>
-        ))}
-      </View>
+        </View>
 
-      <Text style={styles.label}>결제방식 (선택) *다중선택 가능</Text>
-      <View style={styles.optionsContainer}>
-        {paymentMethods.map((method) => (
-          <TouchableOpacity
-            key={method}
+              {/* 메뉴 버튼 */}
+      <View style={styles.menuButtons}>
+        <TouchableOpacity
+          style={[
+            styles.menuButton,
+            activeMenu === 'all' && styles.activeMenuButton,
+          ]}
+          onPress={() => handleMenuPress('all')}
+        >
+          <Ionicons name="menu-outline" size={16} color={activeMenu === 'all' ? '#fff' : '#333'} />
+          <Text
             style={[
-              styles.option,
-              selectedPaymentMethods.includes(method) && styles.selectedOption,
+              styles.menuButtonText,
+              activeMenu === 'all' && styles.activeMenuButtonText,
             ]}
-            onPress={() => togglePaymentMethod(method)}
           >
-            <Text style={styles.optionText}>{method}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+            전체 메뉴
+          </Text>
+        </TouchableOpacity>
 
-      <Text style={styles.label}>출몰시기 (선택) *다중선택 가능</Text>
-      <View style={styles.optionsContainer}>
-        {days.map((day) => (
-          <TouchableOpacity
-            key={day}
+        <TouchableOpacity
+          style={[
+            styles.menuButton,
+            activeMenu === 'recent' && styles.activeMenuButton,
+          ]}
+          onPress={() => handleMenuPress('recent')}
+          onLayout={(event) => {
+            const layout = event.nativeEvent.layout;
+            setButtonLayout({ x: layout.x, y: layout.y + layout.height }); // 버튼 위치 저장
+          }}
+        >
+          <Ionicons name="flame-outline" size={16} color={activeMenu === 'recent' ? '#fff' : '#333'} />
+          <Text
             style={[
-              styles.option,
-              selectedDays.includes(day) && styles.selectedOption,
+              styles.menuButtonText,
+              activeMenu === 'recent' && styles.activeMenuButtonText,
             ]}
-            onPress={() => toggleDay(day)}
           >
-            <Text style={styles.optionText}>{day}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+            최근 활동
+          </Text>
+        </TouchableOpacity>
 
-      <Text style={styles.label}>출몰 시간대 (선택) *다중선택 가능</Text>
-      <View style={styles.timeContainer}>
-        <TextInput
-          style={styles.timeInput}
-          placeholder="오전 11시"
-          value={openingTime}
-          onChangeText={setOpeningTime}
-        />
-        <Text style={styles.timeLabel}>부터</Text>
-        <TextInput
-          style={styles.timeInput}
-          placeholder="오후 8시"
-          value={closingTime}
-          onChangeText={setClosingTime}
-        />
-        <Text style={styles.timeLabel}>까지</Text>
-      </View>
+        <TouchableOpacity
+          style={[
+            styles.menuButton,
+            activeMenu === 'distance' && styles.activeMenuButton,
+          ]}
+          onPress={() => handleMenuPress('distance')}
+        >
+          <Ionicons name="navigate-outline" size={16} color={activeMenu === 'distance' ? '#fff' : '#333'} />
+          <Text
+            style={[
+              styles.menuButtonText,
+              activeMenu === 'distance' && styles.activeMenuButtonText,
+            ]}
+          >
+            거리순 보기
+          </Text>
+        </TouchableOpacity>
 
-      <View style={styles.menuCategoryContainer}>
-        <Text style={styles.label}>메뉴 카테고리</Text>
-        <TouchableOpacity style={styles.addButton}>
-          <Text style={styles.addButtonText}>추가하기</Text>
+        <TouchableOpacity style={styles.menuButton}>
+          <Ionicons name="ellipsis-horizontal-outline" size={16} color="#333" />
         </TouchableOpacity>
       </View>
 
-      <TouchableOpacity style={styles.registerButton}>
-        <Text style={styles.registerButtonText}>가게 등록하기</Text>
-      </TouchableOpacity>
-    </ScrollView>
+      {/* 말풍선 형태의 알림 박스 */}
+      {showNotification && (
+        <View
+          style={[
+            styles.notificationContainer,
+            {
+              top: buttonLayout.y + 100, // "최근 활동" 버튼 바로 아래
+              left: buttonLayout.x - 85, // 버튼의 중앙과 맞춤
+            },
+          ]}
+        >
+          <View style={styles.triangle} />
+          <View style={styles.notificationBox}>
+            <Text style={styles.notificationTitle}>
+              최근 활동이 있는 가게만 볼 수 있어요!
+            </Text>
+            <Text style={styles.notificationText}>
+              • 최근 한 달 내에 방문 인증 성공 내역이 있어요.{'\n'}
+              • 신규로 생성된 가게예요.
+            </Text>
+          </View>
+        </View>
+      )}
+      </View>
+
+      {/* 가게 리스트 */}
+      <View style={styles.shopListContainer}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {shopData.map((shop) => (
+        <View style={styles.shopCard} key={shop.id}>
+          <Image
+            source={{ uri: 'https://via.placeholder.com/150' }} // 이미지 URL 대체 가능
+            style={styles.shopImage}
+          />
+          <Text style={styles.shopTitle}>{shop.title}</Text>
+          <Text style={styles.shopSubtitle}>{shop.subtitle}</Text>
+          <View style={styles.shopFooter}>
+            <Text style={styles.shopDistance}>{shop.distance}</Text>
+            <TouchableOpacity style={styles.visitButton}>
+              <Text style={styles.visitButtonText}>방문하기</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ))}
+        </ScrollView>
+      </View>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
-  
-
+    flex: 1,
+    backgroundColor: 'transparent',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+  topContent: {
+    flex: 1,
+    padding: 10,
   },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    textAlign: 'center',
+  addressBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 15,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
-  label: {
+  addressInput: {
+    flex: 1,
     fontSize: 16,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  searchButton: {
+    marginLeft: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  menuButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 10,
   },
-  optionsContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginBottom: 20,
-  },
-  option: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 20,
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    marginRight: 10,
-    marginBottom: 10,
-  },
-  selectedOption: {
-    backgroundColor: '#ffcccb',
-    borderColor: '#ff6f61',
-  },
-  optionText: {
-    fontSize: 14,
-  },
-  timeContainer: {
+  menuButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
-  },
-  timeInput: {
-    borderBottomWidth: 1,
-    borderColor: '#ccc',
-    padding: 5,
-    width: 80,
-    textAlign: 'center',
-  },
-  timeLabel: {
-    marginHorizontal: 10,
-  },
-  menuCategoryContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  addButton: {
-    backgroundColor: '#ffcccb',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    backgroundColor: '#f2f2f2',
     borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginHorizontal: 5,
   },
-  addButtonText: {
+  activeMenuButton: {
+    backgroundColor: '#ff7f7f',
+  },
+  menuButtonText: {
+    fontSize: 12,
+    color: '#333',
+    marginLeft: 5,
+  },
+  activeMenuButtonText: {
     color: '#fff',
     fontWeight: 'bold',
   },
-  registerButton: {
-    backgroundColor: '#ff6f61',
-    paddingVertical: 15,
-    alignItems: 'center',
-    borderRadius: 30,
+  notificationContainer: {
+    position: 'absolute',
+    zIndex: 10, // 다른 요소 위에 표시
   },
-  registerButtonText: {
+  notificationBox: {
+    backgroundColor: '#ffe4e4',
+    padding: 20,
+    borderRadius: 10,
+    borderColor: '#ff7f7f',
+    borderWidth: 1,
+    elevation: 5, // 그림자 효과
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  triangle: {
+    position: 'absolute',
+    top: -10, // 위쪽에 삼각형 꼬리 배치
+    left: '50%',
+    marginLeft: -10, // 꼬리의 중앙 정렬
+    width: 0,
+    height: 0,
+    borderLeftWidth: 10,
+    borderRightWidth: 10,
+    borderBottomWidth: 10,
+    borderStyle: 'solid',
+    backgroundColor: 'transparent',
+    borderLeftColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: '#ffe4e4', // 말풍선의 배경색과 동일
+  },
+  notificationTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#d9534f',
+    marginBottom: 8,
+  },
+  notificationText: {
+    fontSize: 12,
+    color: '#d9534f',
+    textAlign: 'left',
+  },
+  shopListContainer: {
+  
+  
+    paddingVertical: 10,
+    paddingHorizontal: 10,
+  },
+  shopCard: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 10,
+    width: 250,
+    marginRight: 10,
+    elevation: 2,
+  },
+  shopImage: {
+    width: '100%',
+    height: 100,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+  shopTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  shopSubtitle: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 10,
+  },
+  shopFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  shopDistance: {
+    fontSize: 12,
+    color: '#666',
+  },
+  visitButton: {
+    backgroundColor: '#ff7f7f',
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  visitButtonText: {
+    fontSize: 12,
     color: '#fff',
-    fontSize: 18,
     fontWeight: 'bold',
   },
 });

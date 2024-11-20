@@ -17,24 +17,24 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{ 
-          title: 'Home',
+          title: '',
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
           ),
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="place-cerate"
         options={{
-          title: 'Explore',
+          title: '',
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
           ),
         }}
       /> <Tabs.Screen 
-      name="profile"
+      name="profile" 
       options={{
-        title: 'Profile',
+        title: '',
         tabBarIcon: ({ color, focused }) => (
           <TabBarIcon name={focused ? 'person' : 'person-outline'} color={color} />
         ),

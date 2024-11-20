@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput 
 import { FontAwesome } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 
-export default function RestaurantScreen() {
+export default function PlaceDetailScreen() {
   return (
     <ScrollView style={styles.container}>
       {/* Header Section */}
@@ -15,7 +15,7 @@ export default function RestaurantScreen() {
         </View>
       </View>
 
-      {/* Icon Buttons */}
+      {/* Icon Buttons */} 
       <View style={styles.iconRow}>
         <TouchableOpacity style={styles.iconButton}>
           <FontAwesome name="share-alt" size={24} color="black" />
