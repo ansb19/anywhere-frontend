@@ -1,8 +1,8 @@
 import axiosInstance from '@/api/axiosInstance';
 import { requests } from '@/api/request';
-import axios from 'axios';
-
-const API_BASE_URL = process.env.BACKEND_SERVER // 백엔드 API의 기본 URL을 입력하세요.
+import { BACKEND_SERVER } from '@env';
+ 
+const backend_url : string =BACKEND_SERVER // 백엔드 API의 기본 URL을 입력하세요.
 
 export interface User {
     account_email: string; // 계정 이메일
@@ -19,20 +19,42 @@ export const createUser = async (
   
 ): Promise<{ success: boolean; data: {message:string, data:User} }> => {
   try {
+    console.log(backend_url)
+    console.log("위에 url 나옴")
     const response = await axiosInstance.post<{ success: boolean; data: {message:string, data:User} }>(
       requests.userCreate,
       {
-        account_email: 'test@example.com',
-        nickname: 'testuser',
-        phone_number: '010-0000-0000',
-        register_place_count: 1,
-        penalty_count: 0,
-        penalty_state: false,
+      
+          account_email: 'test@example.com',
+          nickname: 'asw',
+          phone_number: '010-0000-0000',
+          register_place_count: 1,
+          penalty_count: 0,
+          penalty_state: false,
+      
       }
     );
+    console.log(response.status , response.data)
     return response.data;
   } catch (error) {
     console.error('Error updating user name:', error);
+    
+    throw error;
+  }
+};
+
+export const getUser = async (
+  
+): Promise<{ success: boolean; data: {message:string, data:User} }> => {
+  try {
+    const response = await axiosInstance.get<{ success: boolean; data: {message:string, data:User} }>(
+      requests.userCreate,
+    
+    );
+    console.log('User data fetched successfully:', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching user data:', error);
     throw error;
   }
 };
