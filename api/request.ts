@@ -1,7 +1,8 @@
 
 
 export const requests = {
-   userCreate: "/user/sign"
+   userCreate: "/user/sign",
+   getUserCreate: "/user/find/nickname",
 }
 
 
