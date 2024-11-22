@@ -23,12 +23,14 @@ export const createUser = async (
     const response = await axiosInstance.post<{ success: boolean; message: string; data: User }>(
       requests.userCreate,
       {
-        account_email: 'test@example.com',
-        nickname: 'asw',
-        phone_number: '010-0000-0000',
-        register_place_count: 1,
-        penalty_count: 0,
-        penalty_state: false,
+      
+          account_email: 'test12@example.com',
+          nickname: 'test12',
+          phone_number: '010-0000-0000',
+          register_place_count: 1,
+          penalty_count: 0,
+          penalty_state: false,
+      
       }
     );
     console.log(response.status, response.data)
