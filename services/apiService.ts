@@ -5,14 +5,14 @@ import { BACKEND_SERVER } from '@env';
 
 
 export interface User {
-    account_email: string; // 계정 이메일
-    nickname: string; // 닉네임
-    phone_number: string; // 전화번호
-    register_place_count: number; // 등록된 장소 개수
-    created_at?: Date; // 생성 시간 (옵션, 생성 시 자동 설정 가능)
-    penalty_count: number; // 벌점 개수
-    penalty_state: boolean; // 벌점 상태
-  }
+  account_email: string; // 계정 이메일
+  nickname: string; // 닉네임
+  phone_number: string; // 전화번호
+  register_place_count: number; // 등록된 장소 개수
+  created_at?: Date; // 생성 시간 (옵션, 생성 시 자동 설정 가능)
+  penalty_count: number; // 벌점 개수
+  penalty_state: boolean; // 벌점 상태
+}
 
 
 
@@ -39,11 +39,11 @@ export const createUser = async (
   }
 };
 
-export const getUser = async (): Promise<{ success: boolean; data: {message:string, data:User} }> => {
+export const getUser = async (): Promise<{ success: boolean; data: { message: string, data: User } }> => {
   try {
-    const response = await axiosInstance.get<{ success: boolean; data: {message:string, data:User} }>(
+    const response = await axiosInstance.get<{ success: boolean; data: { message: string, data: User } }>(
       requests.userCreate,
-    
+
     );
     console.log('User data fetched successfully:', response.data);
     return response.data;
@@ -53,10 +53,12 @@ export const getUser = async (): Promise<{ success: boolean; data: {message:stri
   }
 };
 
-export const test = async () => {
+export const test = async (): Promise<{ success: boolean; message: string; data: JSON }> => {
   try {
-    const response = await axiosInstance.get(requests.test);
+    const response = await axiosInstance.get<{ success: boolean; message: string; data: JSON }>(requests.test);
     console.log('testtttt', response.data);
+    console.log(response.data.message);
+    console.log(response.data.data);
     return response.data;
   } catch (error) {
     console.log('Error fetching test data:', error);

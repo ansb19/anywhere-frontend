@@ -42,12 +42,12 @@ export default function ProfileScreen() {
 
   const handleCreateAndGetDataUserName = async () => {
     try {
-      const updatedInfo = await test();
+      const updatedInfo = await createUser();
 
-    
-        setUserInfo(updatedInfo.data);
-     
-   
+
+      setUserInfo(updatedInfo.data);
+
+
       Alert.alert('Success', 'User name updated successfully');
     } catch (error) {
       Alert.alert('Error', 'Failed to update user name');
