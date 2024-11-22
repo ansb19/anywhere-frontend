@@ -1,5 +1,5 @@
 // app/screens/profileScreen.tsx
-import { View, Text, StyleSheet, Button, Alert,TextInput } from 'react-native';
+import { View, Text, StyleSheet, Button, Alert, TextInput } from 'react-native';
 
 import { useState } from 'react';
 import { User, createUser, test } from '@/services/apiService';
@@ -15,12 +15,12 @@ export default function ProfileScreen() {
 
   const handleCreateAndGetDataUserName = async () => {
     try {
-      const updatedInfo = await test();
+      const updatedInfo = await createUser();
 
-    
-        setUserInfo(updatedInfo.data.data);
-     
-   
+
+      setUserInfo(updatedInfo.data);
+
+
       Alert.alert('Success', 'User name updated successfully');
     } catch (error) {
       Alert.alert('Error', 'Failed to update user name');
@@ -33,7 +33,7 @@ export default function ProfileScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>프로필 화면</Text>
-     
+
       <Text style={styles.label}>Current Name:</Text>
       <TextInput
         style={styles.input}
@@ -59,7 +59,7 @@ export default function ProfileScreen() {
         </View>
       )}
     </View>
-  ); 
+  );
 }
 
 const styles = StyleSheet.create({
