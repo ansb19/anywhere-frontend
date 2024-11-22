@@ -166,7 +166,7 @@ const HomeScreen = () => {
             <Text style={styles.shopDistance}>{shop.distance}</Text>
             <TouchableOpacity
                 style={styles.visitButton}
-                onPress={() => router.push(`./place-detail/${shop.id}`)} // 상세 페이지로 이동
+                onPress={() => router.push(`./place/place-detail/${shop.id}`)} // 상세 페이지로 이동
               >
                 <Text style={styles.visitButtonText}>방문하기</Text>
             </TouchableOpacity>

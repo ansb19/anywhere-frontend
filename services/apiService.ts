@@ -2,7 +2,7 @@ import axiosInstance from '@/api/axiosInstance';
 import { requests } from '@/api/request';
 import { BACKEND_SERVER } from '@env';
  
-const backend_url : string =BACKEND_SERVER // 백엔드 API의 기본 URL을 입력하세요.
+
 
 export interface User {
     account_email: string; // 계정 이메일
@@ -15,30 +15,26 @@ export interface User {
   }
 
 
+
 export const createUser = async (
-  
-): Promise<{ success: boolean; data: {message:string, data:User} }> => {
+): Promise<{ success: boolean; message: string; data: User }> => {
   try {
-    console.log(backend_url)
-    console.log("위에 url 나옴")
-    const response = await axiosInstance.post<{ success: boolean; data: {message:string, data:User} }>(
+    
+    const response = await axiosInstance.post<{ success: boolean; message: string; data: User }>(
       requests.userCreate,
       {
-      
-          account_email: 'test12@example.com',
-          nickname: 'test12',
-          phone_number: '010-0000-0000',
-          register_place_count: 1,
-          penalty_count: 0,
-          penalty_state: false,
-      
+        account_email: 'test12@example.com',
+        nickname: 'asw123',
+        phone_number: '010-0000-0000',
+        register_place_count: 1,
+        penalty_count: 0,
+        penalty_state: false,
       }
     );
-    console.log(response.status , response.data)
+    console.log(response.status, response.data)
     return response.data;
   } catch (error) {
     console.error('Error updating user name:', error);
-    
     throw error;
   }
 };
@@ -63,7 +59,7 @@ export const test = async () => {
     console.log('testtttt', response.data);
     return response.data;
   } catch (error) {
-    console.error('Error fetching test data:', error);
+    console.log('Error fetching test data:', error);
     throw error;
   }
 };

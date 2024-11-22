@@ -1,13 +1,21 @@
-import React from 'react';
+import React, { useLayoutEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 import MapView, { Marker } from 'react-native-maps';
 import { useRouter,useLocalSearchParams } from 'expo-router';
+import { useNavigation } from "@react-navigation/native";
 
 
 export default function PlaceDetailScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const local = useLocalSearchParams();
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: false
+    });
+  }, [navigation, local]);
 
   // 실제 데이터 기반으로 디테일 렌더링
   const shopData = {
@@ -22,6 +30,9 @@ export default function PlaceDetailScreen() {
     <ScrollView style={styles.container}>
       {/* Header Section */}
       <View style={styles.header}>
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+    <FontAwesome name="arrow-left" size={24} color="black" />
+  </TouchableOpacity>
         <Text style={styles.logo}>🍞</Text>
         <View>
           <Text style={styles.title}>황금잉어빵{local.id}</Text>
@@ -106,6 +117,9 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
+  },
+  backButton: {
+    marginRight: 16, // 버튼과 다른 요소 간 간격
   },
   logo: {
     fontSize: 40,
