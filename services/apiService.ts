@@ -43,9 +43,7 @@ export const createUser = async (
   }
 };
 
-export const getUser = async (
-  
-): Promise<{ success: boolean; data: {message:string, data:User} }> => {
+export const getUser = async (): Promise<{ success: boolean; data: {message:string, data:User} }> => {
   try {
     const response = await axiosInstance.get<{ success: boolean; data: {message:string, data:User} }>(
       requests.userCreate,
@@ -55,6 +53,17 @@ export const getUser = async (
     return response.data;
   } catch (error) {
     console.error('Error fetching user data:', error);
+    throw error;
+  }
+};
+
+export const test = async () => {
+  try {
+    const response = await axiosInstance.get(requests.test);
+    console.log('testtttt', response.data);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching test data:', error);
     throw error;
   }
 };

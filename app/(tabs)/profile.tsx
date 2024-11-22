@@ -2,7 +2,7 @@
 import { View, Text, StyleSheet, Button, Alert,TextInput } from 'react-native';
 
 import { useState } from 'react';
-import { User, createUser } from '@/services/apiService';
+import { User, createUser, test } from '@/services/apiService';
 
 export default function ProfileScreen() {
 
@@ -15,7 +15,7 @@ export default function ProfileScreen() {
 
   const handleCreateAndGetDataUserName = async () => {
     try {
-      const updatedInfo = await createUser( );
+      const updatedInfo = await test();
 
     
         setUserInfo(updatedInfo.data.data);
