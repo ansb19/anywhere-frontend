@@ -25,8 +25,8 @@ export const createUser = async (
       requests.userCreate,
       {
       
-          account_email: 'test@example.com',
-          nickname: 'asw',
+          account_email: 'test12@example.com',
+          nickname: 'test12',
           phone_number: '010-0000-0000',
           register_place_count: 1,
           penalty_count: 0,
