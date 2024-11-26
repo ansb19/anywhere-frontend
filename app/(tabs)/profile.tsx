@@ -8,14 +8,18 @@ import {
 
   Alert,
   Animated,
+  Button,
 
 } from "react-native";
 
 import { useState } from 'react';
-import { User,  createUser,  test } from '@/services/apiService';
+import {   createUser,  test } from '@/services/apiService';
 import { useRouter } from "expo-router";
 
 import InfiniteLoopingText from "@/components/InfiniteScrollingText";
+import { User } from "@/types/user";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { logout } from "@/store/slices/authSlice";
 const shopData = [
   { title: '황금잉어빵', subtitle: '양산시 물금읍 아아아아아아아아 40', distance: '0개 | 245m', id: 1 },
   { title: '달콤카페', subtitle: '양산시 물금읍 아아아아아아아아 40', distance: '3개 | 320m', id: 2 },
@@ -36,9 +40,19 @@ export default function ProfileScreen() {
   const [newName, setNewName] = useState<string>('');
   const [userInfo, setUserInfo] = useState<User | null>(null);
 
+  const user = useAppSelector((state) => state.auth.user);
+  const dispatch = useAppDispatch();
 
- 
 
+  const handleLogin = () => {
+    dispatch(logout()); // 로그인 상태 업데이트
+   
+  };
+  // 이메일 마스킹 처리 함수
+  const maskEmail = (email: string) => {
+    const [localPart] = email.split("@"); // @ 기준으로 앞부분 추출
+    return `${localPart}@****`;
+  };
 
   const handleCreateAndGetDataUserName = async () => {
     try {
@@ -59,7 +73,7 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView style={styles.container}>
-    {/* 가게 정보 & 메뉴 */}
+    {/* 유저 정보 */}
     <View style={styles.section}>
       <View style={styles.headerRow}>
         <Text style={styles.sectionTitle}>프로필</Text>
@@ -74,19 +88,29 @@ export default function ProfileScreen() {
       </View>
      
 
-      {/* 가게 정보 */}
+      {/* 유저 정보 */}
       <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>이름</Text>
-        <Text style={styles.infoValue}>{"사용자 이름"}</Text>
-      </View>
-      <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>닉네임</Text>
-        <Text style={styles.infoValue}>{"사용자 닉네임"}</Text>
-      </View>
-      <View style={styles.infoRow}>
-        <Text style={styles.infoLabel}>핸드폰 번호</Text>
-        <Text style={styles.infoValue}>{"010-0000-****"}</Text>
-      </View>
+            <Text style={styles.infoLabel}>이름</Text>
+            <Text style={styles.infoValue}>{user?.account_email ? maskEmail(user.account_email) : "정보 없음"}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>닉네임</Text>
+            <Text style={styles.infoValue}>{user?.nickname || "정보 없음"}</Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>핸드폰 번호</Text>
+            <Text style={styles.infoValue}>
+              {user?.phone_number
+                ? user.phone_number.replace(/(\d{3})-(\d{4})-(\d{4})/, "$1-$2-****")
+                : "정보 없음"}
+            </Text>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>로그아웃</Text>
+            <TouchableOpacity     style={styles.visitButton} onPress={() =>handleLogin()}>
+              <Text style={styles.visitButtonText}>로그아웃</Text>
+            </TouchableOpacity>
+          </View>
       
 
       
@@ -95,7 +119,7 @@ export default function ProfileScreen() {
     {/* 가게 제보 */}
     <View style={styles.section}>
       <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>가게 제보</Text>
+        <Text style={styles.sectionTitle} >제보 한 가게 ({shopData.length}개)</Text>
       
       </View>
       <View style={styles.shoList}>
