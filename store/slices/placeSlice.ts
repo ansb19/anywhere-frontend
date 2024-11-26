@@ -1,9 +1,7 @@
+import { Place } from "@/types/place";
 import { createSlice } from "@reduxjs/toolkit";
 
-interface Place {
-  id: string;
-  name: string;
-}
+
 
 interface PlaceState {
   places: Place[];
@@ -21,7 +19,7 @@ const placeSlice = createSlice({
       state.places.push(action.payload);
     },
     removePlace(state, action) {
-      state.places = state.places.filter((place) => place.id !== action.payload);
+      state.places = state.places.filter((place) => place.place_name !== action.payload);
     },
   },
 });

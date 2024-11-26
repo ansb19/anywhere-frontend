@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { login, } from "@/store/slices/authSlice";
 
 const NicknameScreen = () => {
-  const [nickname, setNickname] = useState(""); // 닉네임 상태
+  const [nickname, setNickname] = useState("aa"); // 닉네임 상태
   const router = useRouter();
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);

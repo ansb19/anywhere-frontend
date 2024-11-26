@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { login,  } from "@/store/slices/authSlice";
 
 const LoginScreen = () => {
-  const [email, setEmail] = useState(""); // 이메일 입력 상태
+  const [email, setEmail] = useState("asw0899@aa.aa"); // 이메일 입력 상태
   const router = useRouter();
   const dispatch = useAppDispatch();
 
