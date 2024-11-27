@@ -1,6 +1,6 @@
 import axiosInstance from '@/api/axiosInstance';
 import { requests } from '@/api/request';
-import { BACKEND_SERVER } from '@env';
+
  
 
 

@@ -1,7 +1,7 @@
 import React, { useLayoutEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, TextInput } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import MapView, { Marker } from 'react-native-maps';
+
 import { useRouter,useLocalSearchParams } from 'expo-router';
 import { useNavigation } from "@react-navigation/native";
 

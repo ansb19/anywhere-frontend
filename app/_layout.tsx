@@ -31,15 +31,15 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Provider store={store}>
-        <AuthGate>
+ 
           <Stack>
-            <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="auth" options={{ headerShown: false }} />
+            <Stack.Screen name="tabs" options={{ headerShown: false }} />
             <Stack.Screen name="place" options={{ headerShown: false }} />
             <Stack.Screen name="+not-found" />
           </Stack>
          
-        </AuthGate>
+ 
       </Provider>
     </ThemeProvider>
   );
@@ -53,7 +53,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
     if (!isAuthenticated) {
       // RootLayout이 완전히 마운트된 후 리디렉션 실행
       setTimeout(() => {
-        router.replace("/(auth)/login");
+        router.replace("/auth/login");
       }, 0);
     }
   }, [isAuthenticated]);

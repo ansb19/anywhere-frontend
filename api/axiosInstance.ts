@@ -1,6 +1,7 @@
 
+import { BACKEND_LOCAL } from '@env';
 import axios from 'axios';
-import { BACKEND_SERVER,BACKEND_LOCAL } from '@env';
+
 
 const backend_url: string = BACKEND_LOCAL; //BACKEND_SERVER 서버에 올릴시
 
@@ -9,7 +10,7 @@ const axiosInstance = axios.create({
   timeout: 5000, // 요청 타임아웃 시간 설정 (밀리초)
   withCredentials : true,
 });
-
+ 
 
 
 export default axiosInstance;
