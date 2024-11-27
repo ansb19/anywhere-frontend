@@ -16,7 +16,7 @@ jobs:
 
       - name: Create .env file
         run: |
-          echo BACKEND_SERVER=${{ secrets.BACKEND_SERVER }} >> .env
+          echo EXPO_PUBLIC_BACKEND_SERVER=${{ secrets.BACKEND_SERVER }} >> .env
           
 
       # 2. Docker 로그인 (Docker Hub 사용 시)

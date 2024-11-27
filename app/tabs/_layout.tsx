@@ -24,7 +24,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="place-cerate"
+        name="place-create"
         options={{
           title: '',
           tabBarIcon: ({ color, focused }) => (

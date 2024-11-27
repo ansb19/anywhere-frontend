@@ -1,6 +1,6 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Slot, Stack, useRouter } from "expo-router";
+import { Slot, useRouter } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import "react-native-reanimated";
@@ -31,15 +31,10 @@ export default function RootLayout() {
   return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
       <Provider store={store}>
- 
-          <Stack>
-            <Stack.Screen name="auth" options={{ headerShown: false }} />
-            <Stack.Screen name="tabs" options={{ headerShown: false }} />
-            <Stack.Screen name="place" options={{ headerShown: false }} />
-            <Stack.Screen name="+not-found" />
-          </Stack>
-         
- 
+        {/* AuthGate를 Slot 내부에서 호출 */}
+        <AuthGate>
+          <Slot />
+        </AuthGate>
       </Provider>
     </ThemeProvider>
   );
@@ -51,13 +46,9 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      // RootLayout이 완전히 마운트된 후 리디렉션 실행
-      setTimeout(() => {
-        router.replace("/auth/login");
-      }, 0);
+      router.replace("/auth/login");
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, router]);
 
-  
   return <>{children}</>;
 }
