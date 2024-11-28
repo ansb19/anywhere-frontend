@@ -13,13 +13,14 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
+        
       }}>
       <Tabs.Screen
         name="index"
         options={{ 
           title: '',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'home' : 'home-outline'} color={color} />
+            <Ionicons name={focused ? 'home' : 'home-outline'} color={color} size={20} />
           ),
         }}
       />
@@ -28,7 +29,7 @@ export default function TabLayout() {
         options={{
           title: '',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+            <Ionicons name={focused ? 'code-slash' : 'code-slash-outline'} color={color} size={20}/>
           ),
         }}
       /> <Tabs.Screen 
@@ -36,7 +37,7 @@ export default function TabLayout() {
       options={{
         title: '',
         tabBarIcon: ({ color, focused }) => (
-          <Ionicons name={focused ? 'person' : 'person-outline'} color={color} />
+          <Ionicons name={focused ? 'person' : 'person-outline'} color={color} size={20}/>
         ),
       }}
     />

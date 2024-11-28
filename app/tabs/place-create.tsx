@@ -9,9 +9,12 @@ import {
   StyleSheet,
   Dimensions,
   Alert,
+  Platform,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAppSelector } from "@/store/hooks";
+import DateTimePicker, { DateTimePickerEvent }   from "@react-native-community/datetimepicker";
+import RNDateTimePicker from "@react-native-community/datetimepicker";
 
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -46,12 +49,64 @@ const PlaceCerateScreen: React.FC = () => {
   const [selectedStoreType, setSelectedStoreType] = useState<string | null>(
     null
   );
+  const [selectedOwnerTypes, setSelectedOwnerTypes] = useState<boolean >(
+    false
+  );
 
   const [inputText, setInputText] = useState<string>(""); // 입력된 텍스트 상태
+
+  // 현재 시간 설정
+  const now = new Date();
+  // 오늘의 끝 시간(23:59:59) 설정
+  const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+
+  const [startDate, setStartDate] = useState<Date>(new Date());
+  const [startTime, setStartTime] = useState<Date>(new Date());
+  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [endTime, setEndTime] = useState<Date>(new Date());
+
+  const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
+  const [showStartTimePicker, setShowStartTimePicker] = useState<boolean>(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState<boolean>(false);
+
+  const handleStartDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowStartDatePicker(false);
+    if (selectedDate) {
+      setStartDate(selectedDate);
+    }
+  };
+
+  const handleStartTimeChange = (event: DateTimePickerEvent, selectedTime?: Date) => {
+    setShowStartTimePicker(false);
+    if (selectedTime) {
+      setStartTime(selectedTime);
+    }
+  };
+
+  const handleEndDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+    setShowEndDatePicker(false);
+    if (selectedDate) {
+      setEndDate(selectedDate);
+    }
+  };
+
+  const handleEndTimeChange = (event: DateTimePickerEvent, selectedTime?: Date) => {
+    setShowEndTimePicker(false);
+    if (selectedTime) {
+      setEndTime(selectedTime);
+    }
+  };
+
+
   const storeTypes: { [key: number]: string } = {
     1: "길거리",
     2: "매장",
     3: "편의점",
+  };
+  const ownerTypes: { [key: number]: boolean } = {
+    1: true,
+    2: false,
   };
   const paymentMethods: { [key: number]: string } = {
     1: "현금",
@@ -74,12 +129,30 @@ const PlaceCerateScreen: React.FC = () => {
     );
   };
 
-  const toggleDay = (day: string) => {
-    setSelectedDays((prev) =>
-      prev.includes(day) ? prev.filter((item) => item !== day) : [...prev, day]
-    );
+ 
+
+  const combineDateAndTime = (date: Date, time: Date): Date => {
+    const combined = new Date(date);
+    combined.setHours(time.getHours());
+    combined.setMinutes(time.getMinutes());
+    combined.setSeconds(time.getSeconds());
+    return combined;
   };
 
+  const formatDate = (date: Date): string => {
+    return date.toLocaleString("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  // 시작 날짜와 시간 합치기
+  const combinedStartDateTime = combineDateAndTime(startDate, startTime);
+  // 끝 날짜와 시간 합치기
+  const combinedEndDateTime = combineDateAndTime(endDate, endTime);
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>가게 제보</Text>
@@ -137,47 +210,126 @@ const PlaceCerateScreen: React.FC = () => {
         ))}
       </View>
 
-      <Text style={styles.label}>출몰시기 (선택) *다중선택 가능</Text>
-      <View style={styles.optionsContainer}>
-        {days.map((day) => (
-          <TouchableOpacity
-            key={day}
-            style={[
-              styles.option,
-              selectedDays.includes(day) && styles.selectedOption,
-            ]}
-            onPress={() => toggleDay(day)}
-          >
-            <Text style={styles.optionText}>{day}</Text>
-          </TouchableOpacity>
-        ))}
+      <Text style={styles.title}>출몰 시기 (설정)</Text>
+
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>시작 날짜</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setShowStartDatePicker(true)}
+        >
+          <Text style={styles.buttonText}>{startDate.toLocaleDateString()}</Text>
+        </TouchableOpacity>
+
+        {showStartDatePicker && (
+          <RNDateTimePicker
+            value={startDate}
+            mode="date"
+            display={Platform.OS === "ios" ? "inline" : "default"}
+            onChange={handleStartDateChange}
+          />
+        )}
       </View>
 
-      <Text style={styles.label}>출몰 시간대 (선택) *다중선택 가능</Text>
-      <View style={styles.timeContainer}>
-        <TextInput
-          style={styles.timeInput}
-          placeholder="오전 11시"
-          value={openingTime}
-          onChangeText={setOpeningTime}
-        />
-        <Text style={styles.timeLabel}>부터</Text>
-        <TextInput
-          style={styles.timeInput}
-          placeholder="오후 8시"
-          value={closingTime}
-          onChangeText={setClosingTime}
-        />
-        <Text style={styles.timeLabel}>까지</Text>
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>시작 시간</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setShowStartTimePicker(true)}
+        >
+          <Text style={styles.buttonText}>
+            {startTime.toLocaleTimeString("ko-KR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Text>
+        </TouchableOpacity>
+
+        {showStartTimePicker && (
+          <RNDateTimePicker
+            value={startTime}
+            mode="time"
+            display={Platform.OS === "ios" ? "inline" : "default"}
+            onChange={handleStartTimeChange}
+          />
+        )}
       </View>
 
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>종료 날짜</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setShowEndDatePicker(true)}
+        >
+          <Text style={styles.buttonText}>{endDate.toLocaleDateString()}</Text>
+        </TouchableOpacity>
+
+        {showEndDatePicker && (
+          <RNDateTimePicker
+            value={endDate}
+            mode="date"
+            display={Platform.OS === "ios" ? "inline" : "default"}
+            onChange={handleEndDateChange}
+          />
+        )}
+      </View>
+
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>종료 시간</Text>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setShowEndTimePicker(true)}
+        >
+          <Text style={styles.buttonText}>
+            {endTime.toLocaleTimeString("ko-KR", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Text>
+        </TouchableOpacity>
+
+        {showEndTimePicker && (
+          <RNDateTimePicker
+            value={endTime}
+            mode="time"
+            display={Platform.OS === "ios" ? "inline" : "default"}
+            onChange={handleEndTimeChange}
+          />
+        )}
+      </View>
+
+      <View style={styles.resultContainer}>
+        <Text style={styles.resultText}>출몰 시간대</Text>
+        <Text style={styles.result}>
+          {formatDate(combinedStartDateTime)} 부터
+        </Text>
+        <Text style={styles.result}>{formatDate(combinedEndDateTime)} 까지</Text>
+      </View>
       <View style={styles.menuCategoryContainer}>
         <Text style={styles.label}>메뉴 카테고리</Text>
         <TouchableOpacity style={styles.addButton}>
           <Text style={styles.addButtonText}>추가하기</Text>
         </TouchableOpacity>
+      
+        
+      </View>
+      <Text style={styles.label}>제보자 형태 (선택)</Text>
+      <View style={styles.optionsContainer}>
+        {Object.entries(ownerTypes).map(([key, type]) => (
+          <TouchableOpacity
+            key={key} // 객체의 키를 사용
+            style={[
+              styles.option,
+              selectedOwnerTypes === type && styles.selectedOption,
+            ]}
+            onPress={() => setSelectedOwnerTypes(type)} // 선택된 타입 설정
+          >
+            <Text style={styles.optionText}>{  type ? "본인" :"제보자"}</Text>
+          </TouchableOpacity>
+        ))}
       </View>
          {/* 입력 영역 */}
+         <Text style={styles.label}>코멘트 (선택)</Text>
          <TextInput
         style={styles.textInput}
         multiline
@@ -324,6 +476,39 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+
+  inputContainer: {
+    marginBottom: 20,
+  },
+
+  button: {
+    backgroundColor: "#4CAF50",
+    padding: 12,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  resultContainer: {
+    marginTop: 30,
+    padding: 16,
+    backgroundColor: "#eef6f9",
+    borderRadius: 8,
+  },
+  resultText: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+    color: "#333",
+  },
+  result: {
+    fontSize: 16,
+    color: "#555",
+    marginBottom: 5,
   },
 });
 

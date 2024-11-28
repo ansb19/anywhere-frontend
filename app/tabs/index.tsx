@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,12 @@ import {
   ScrollView,
   Image,
   Dimensions,
+  Platform,
 } from 'react-native';
+import * as Location from 'expo-location'
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { NaverMapView } from '@mj-studio/react-native-naver-map';
 
 
 const shopData = [
@@ -30,7 +33,22 @@ const HomeScreen = () => {
   const [activeMenu, setActiveMenu] = useState<string>(''); // 활성화된 메뉴
   const [showNotification, setShowNotification] = useState<boolean>(false); // 알림 박스 표시 여부
   const [buttonLayout, setButtonLayout] = useState<{ x: number; y: number }>({ x: 0, y: 0 }); // 버튼 위치 저장
-
+  useEffect(() => {
+    (async () => {
+      try {
+        const {granted} = await Location.requestForegroundPermissionsAsync();
+        /**
+         * Note: Foreground permissions should be granted before asking for the background permissions
+         * (your app can't obtain background permission without foreground permission).
+         */
+        if(granted) {
+          await Location.requestBackgroundPermissionsAsync();
+        }
+      } catch(e) {
+        console.error(`Location request has been failed: ${e}`);
+      }
+    })();
+  }, []);
   const handleMenuPress = (menu: string) => {
     setActiveMenu(menu);
 
@@ -47,6 +65,8 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
+    
+   
       {/* 상단 콘텐츠 */}
       <View style={styles.topContent}>
         {/* 주소 입력 바 */}

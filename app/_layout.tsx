@@ -8,6 +8,7 @@ import { Provider } from "react-redux";
 import { store } from "../store";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useAppSelector } from "@/store/hooks";
+import { SafeAreaView } from "react-native";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -33,6 +34,7 @@ export default function RootLayout() {
       <Provider store={store}>
         {/* AuthGate를 Slot 내부에서 호출 */}
         <AuthGate>
+          
           <Slot />
         </AuthGate>
       </Provider>
