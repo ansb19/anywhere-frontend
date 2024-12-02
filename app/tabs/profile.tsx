@@ -159,6 +159,7 @@ export default function ProfileScreen() {
         <Text style={styles.reviewValue}>0.0점</Text>
       </View>
     </View>
+    
   </ScrollView>
   ); 
 }

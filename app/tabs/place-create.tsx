@@ -10,6 +10,9 @@ import {
   Dimensions,
   Alert,
   Platform,
+  Modal,
+  FlatList,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAppSelector } from "@/store/hooks";
@@ -69,6 +72,76 @@ const PlaceCerateScreen: React.FC = () => {
   const [showStartTimePicker, setShowStartTimePicker] = useState<boolean>(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState<boolean>(false);
+
+  // 메뉴 항목 상태
+  const categories = [
+    {
+      id: 1,
+      name: "붕어빵",
+      image: "https://via.placeholder.com/60?text=붕어빵",
+    },
+    {
+      id: 2,
+      name: "어묵",
+      image: "https://via.placeholder.com/60?text=어묵",
+    },
+    {
+      id: 3,
+      name: "호떡",
+      image: "https://via.placeholder.com/60?text=호떡",
+    },
+    {
+      id: 4,
+      name: "군고구마",
+      image: "https://via.placeholder.com/60?text=군고구마",
+    },
+    {
+      id: 5,
+      name: "떡볶이",
+      image: "https://via.placeholder.com/60?text=떡볶이",
+    },
+    {
+      id: 6,
+      name: "순대",
+      image: "https://via.placeholder.com/60?text=순대",
+    },
+    {
+      id: 7,
+      name: "빵",
+      image: "https://via.placeholder.com/60?text=빵",
+    },
+    {
+      id: 8,
+      name: "토스트",
+      image: "https://via.placeholder.com/60?text=토스트",
+    },
+    {
+      id: 9,
+      name: "커피/디저트",
+      image: "https://via.placeholder.com/60?text=커피",
+    },
+  ];
+  const [selectedMenu, setSelectedMenu] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+
+
+  const [tagInputText, setTagInputText] = useState<string>(""); // 현재 입력 중인 텍스트
+  const [tags, setTags] = useState<string[]>([]); // 태그 배열
+
+  // 태그 추가 함수
+  const addTag = () => {
+    if (tagInputText.trim() === "") return; // 공백만 입력된 경우 무시
+    const newTag = `#${tagInputText.trim()}`;
+    setTags((prevTags) => [...prevTags, newTag]); // 새로운 태그 추가
+    setInputText(""); // 입력 필드 초기화
+  };
+
+
+  // 메뉴 선택 시 호출되는 함수
+  const handleSelectCategory = (name: string) => {
+    setSelectedMenu(name);
+    setModalVisible(false);
+  };
 
   const handleStartDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     setShowStartDatePicker(false);
@@ -156,7 +229,7 @@ const PlaceCerateScreen: React.FC = () => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>가게 제보</Text>
-      <Text style={styles.label}>가게 이름</Text>
+      <Text style={styles.title}>가게 이름*</Text>
       <TextInput
         style={styles.addressInput}
         placeholder="여기에 주소를 입력해주세요"
@@ -164,7 +237,7 @@ const PlaceCerateScreen: React.FC = () => {
       />
 
       {/* TODO 지도  부분 만들어야함*/}
-      <Text style={styles.label}>지도</Text>
+      <Text style={styles.title}>지도*</Text>
       <View style={styles.mapContainer}>
         <Text style={styles.label}>지도</Text>
       </View>
@@ -177,7 +250,7 @@ const PlaceCerateScreen: React.FC = () => {
         </Text>
       </View>
 
-      <Text style={styles.label}>가게형태 (선택)</Text>
+      <Text style={styles.title}>가게형태* (선택)</Text>
 
       <View style={styles.optionsContainer}>
         {Object.entries(storeTypes).map(([key, type]) => (
@@ -194,7 +267,7 @@ const PlaceCerateScreen: React.FC = () => {
         ))}
       </View>
 
-      <Text style={styles.label}>결제방식 (선택) *다중선택 가능</Text>
+      <Text style={styles.title}>결제방식* (선택) *다중선택 가능</Text>
       <View style={styles.optionsContainer}>
         {Object.entries(paymentMethods).map(([key, type]) => (
           <TouchableOpacity
@@ -210,7 +283,7 @@ const PlaceCerateScreen: React.FC = () => {
         ))}
       </View>
 
-      <Text style={styles.title}>출몰 시기 (설정)</Text>
+      <Text style={styles.title}>출몰 시기* (설정)</Text>
 
       <View style={styles.inputContainer}>
         <Text style={styles.label}>시작 날짜</Text>
@@ -306,14 +379,99 @@ const PlaceCerateScreen: React.FC = () => {
         <Text style={styles.result}>{formatDate(combinedEndDateTime)} 까지</Text>
       </View>
       <View style={styles.menuCategoryContainer}>
-        <Text style={styles.label}>메뉴 카테고리</Text>
-        <TouchableOpacity style={styles.addButton}>
+    
+        <Text style={styles.title}>메뉴 카테고리</Text>
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => setModalVisible(true)}
+        >
           <Text style={styles.addButtonText}>추가하기</Text>
         </TouchableOpacity>
-      
+    
+
+   
+
+        {/* 카테고리 선택 모달 */}
+        <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>카테고리 선택</Text>
+            <FlatList
+              data={categories}
+              keyExtractor={(item) => item.id.toString()}
+              numColumns={4} // 3열로 구성
+              renderItem={({ item, index }) => (
+                <View
+                  style={[
+                    styles.categoryItem,
+                    index === categories.length - 1 && styles.lastItem, // 마지막 아이템에 스타일 추가
+                  ]}
+                >
+                  <TouchableOpacity
+                    onPress={() => handleSelectCategory(item.name)}
+                  >
+                    <Image
+                      source={{ uri: item.image }}
+                      style={styles.categoryImage}
+                    />
+                    <Text style={styles.categoryName}>{item.name}</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+              contentContainerStyle={styles.flatListContainer}
+            />
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setModalVisible(false)}
+            >
+              <Text style={styles.closeButtonText}>닫기</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
         
       </View>
-      <Text style={styles.label}>제보자 형태 (선택)</Text>
+         {/* 선택된 메뉴를 다음 줄에 표시 */}
+         {selectedMenu && (
+        <View style={styles.selectedMenuContainer}>
+          <Text style={styles.selectedMenuText}>선택된 메뉴: {selectedMenu}</Text>
+        </View>
+      )}
+
+<Text style={styles.title}>태그 입력</Text>
+
+{/* 텍스트 입력 필드와 추가 버튼 */}
+<View style={styles.tagInputContainer}>
+  <TextInput
+    style={styles.tagInput}
+    value={tagInputText}
+    onChangeText={setTagInputText}
+    placeholder="태그를 입력하세요"
+    placeholderTextColor="#aaa"
+  />
+  <TouchableOpacity style={styles.addButton} onPress={addTag}>
+    <Text style={styles.addButtonText}>추가</Text>
+  </TouchableOpacity>
+</View>
+
+ {/* 태그 표시 */}
+ <View style={styles.tagContainer}>
+        {tags.length > 0 ? (
+          tags.map((tag: string, index: number) => (
+            <View key={index} style={styles.tagItem}>
+              <Text style={styles.tagText}>{tag}</Text>
+            </View>
+          ))
+        ) : (
+          <Text style={styles.noTagsText}>태그가 없습니다.</Text>
+        )}
+</View>
+      <Text style={styles.title}>제보자 형태* (선택)</Text>
       <View style={styles.optionsContainer}>
         {Object.entries(ownerTypes).map(([key, type]) => (
           <TouchableOpacity
@@ -329,7 +487,7 @@ const PlaceCerateScreen: React.FC = () => {
         ))}
       </View>
          {/* 입력 영역 */}
-         <Text style={styles.label}>코멘트 (선택)</Text>
+         <Text style={styles.title}>코멘트 </Text>
          <TextInput
         style={styles.textInput}
         multiline
@@ -416,11 +574,7 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 14,
   },
-  timeContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
-  },
+
   timeInput: {
     borderBottomWidth: 1,
     borderColor: "#ccc",
@@ -433,18 +587,137 @@ const styles = StyleSheet.create({
   },
   menuCategoryContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 20,
+    alignItems: "flex-start",
+   
   },
   addButton: {
     backgroundColor: "#ffcccb",
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 20,
+    marginTop: 3,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 10,
   },
   addButtonText: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  selectedMenuContainer: {
+    marginBottom: 20, // 선택된 메뉴와 다음 요소 간격
+    marginTop: 5, // 메뉴 카테고리와 선택된 메뉴 간격
+  },
+  selectedMenuLabel: {
+    fontSize: 16,
+    color: "#555",
+    marginBottom: 5,
+  },
+  selectedMenuText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+     textAlign:"left"
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  flatListContainer: {
+    justifyContent: "flex-start", // 왼쪽 정렬
+    alignItems: "flex-start", // 아이템을 왼쪽으로 정렬
+  },
+  categoryItem: {
+    flex: 1,
+    alignItems: "center",
+    margin: 10,
+  },
+  lastItem: {
+    width: "25%", // 마지막 아이템 너비를 그대로 유
+    alignItems: "center",
+    margin: 10,
+  },
+
+  categoryImage: {
+    width: 60,
+    height: 60,
+    marginBottom: 5,
+  },
+  categoryName: {
+    fontSize: 14,
+    textAlign: "center",
+    color: "#333",
+  },
+  menuItem: {
+    padding: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+  },
+  menuItemText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  closeButton: {
+    marginTop: 10,
+    backgroundColor: "#ffcccb",
+    paddingVertical: 10,
+    alignItems: "center",
+    borderRadius: 10,
+  },
+  closeButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  tagInputContainer: {
+    width:"30%",
+    flexDirection: "row", // 입력 필드와 버튼을 같은 줄에 배치
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  tagContainer: {
+    flexDirection: "row", // 태그들을 한 줄에 나란히 배치
+    flexWrap: "wrap", // 줄이 넘어가면 다음 줄로 이동
+    padding: 10,
+    
+   
+   
+ 
+  },
+  tagItem: {
+    backgroundColor: "#ffcccb", // 타원형 배경색
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 20, // 타원 형태를 위한 설정
+    marginRight: 10, // 태그 간 간격
+    marginBottom: 10, // 아래 태그와의 간격
+  },
+  tagInput: {
+    flex: 1, // 입력 필드가 버튼 옆에서 최대한 공간을 차지하도록 설정
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 5,
+    padding: 10,
+    fontSize: 16,
+    marginRight: 10,
+    color: "#333",
+  },
+  tagText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  noTagsText: {
+    fontSize: 16,
+    color: "#aaa",
+    fontStyle: "italic",
   },
   textInput: {
     height: 150,
@@ -498,6 +771,7 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#eef6f9",
     borderRadius: 8,
+    marginBottom: 20,
   },
   resultText: {
     fontSize: 18,
