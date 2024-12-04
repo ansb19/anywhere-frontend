@@ -14,6 +14,7 @@ import * as Location from 'expo-location'
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { NaverMapView } from '@mj-studio/react-native-naver-map';
+import { examplePlaces } from '@/types/place';
 
 
 const shopData = [
@@ -174,19 +175,19 @@ const HomeScreen = () => {
       {/* 가게 리스트 */}
       <View style={styles.shopListContainer}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {shopData.map((shop) => (
-        <View style={styles.shopCard} key={shop.id}>
+        {examplePlaces.map((shop) => (
+        <View style={styles.shopCard} key={shop.place_id}>
           <Image
             source={{ uri: 'https://via.placeholder.com/150' }} // 이미지 URL 대체 가능
             style={styles.shopImage}
           />
-          <Text style={styles.shopTitle}>{shop.title}</Text>
-          <Text style={styles.shopSubtitle}>{shop.subtitle}</Text>
+          <Text style={styles.shopTitle}>{shop.place_name}</Text>
+          <Text style={styles.shopSubtitle}>{shop.comment}</Text>
           <View style={styles.shopFooter}>
-            <Text style={styles.shopDistance}>{shop.distance}</Text>
+            <Text style={styles.shopDistance}>{shop.lat} | {shop.lon}</Text>
             <TouchableOpacity
                 style={styles.visitButton}
-                onPress={() => router.push(`./place/place-detail/${shop.id}`)} // 상세 페이지로 이동
+                onPress={() => router.push(`./place/place-detail/${shop.place_id}`)} // 상세 페이지로 이동
               >
                 <Text style={styles.visitButtonText}>방문하기</Text>
             </TouchableOpacity>
@@ -304,6 +305,7 @@ const styles = StyleSheet.create({
   },
   shopCard: {
     backgroundColor: '#fff',
+    justifyContent: 'space-between',
     borderRadius: 10,
     padding: 10,
     width: 250,

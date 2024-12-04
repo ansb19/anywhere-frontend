@@ -16,10 +16,16 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useAppSelector } from "@/store/hooks";
-import DateTimePicker, { DateTimePickerEvent }   from "@react-native-community/datetimepicker";
+import DateTimePicker, {
+  DateTimePickerEvent,
+} from "@react-native-community/datetimepicker";
 import RNDateTimePicker from "@react-native-community/datetimepicker";
-
-
+import * as ImagePicker from "expo-image-picker";
+import { FlashList } from "@shopify/flash-list";
+import axios from "axios";
+import requests from "@/api/request";
+import { examplePlace } from "@/types/place";
+import axiosInstance from "@/api/axiosInstance";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 console.log(SCREEN_WIDTH);
 // export interface Place {
@@ -52,24 +58,31 @@ const PlaceCerateScreen: React.FC = () => {
   const [selectedStoreType, setSelectedStoreType] = useState<string | null>(
     null
   );
-  const [selectedOwnerTypes, setSelectedOwnerTypes] = useState<boolean >(
-    false
-  );
+  const [selectedOwnerTypes, setSelectedOwnerTypes] = useState<boolean>(false);
 
   const [inputText, setInputText] = useState<string>(""); // 입력된 텍스트 상태
 
   // 현재 시간 설정
   const now = new Date();
   // 오늘의 끝 시간(23:59:59) 설정
-  const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+  const endOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    23,
+    59,
+    59
+  );
 
   const [startDate, setStartDate] = useState<Date>(new Date());
   const [startTime, setStartTime] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [endTime, setEndTime] = useState<Date>(new Date());
 
-  const [showStartDatePicker, setShowStartDatePicker] = useState<boolean>(false);
-  const [showStartTimePicker, setShowStartTimePicker] = useState<boolean>(false);
+  const [showStartDatePicker, setShowStartDatePicker] =
+    useState<boolean>(false);
+  const [showStartTimePicker, setShowStartTimePicker] =
+    useState<boolean>(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState<boolean>(false);
 
@@ -77,42 +90,42 @@ const PlaceCerateScreen: React.FC = () => {
   const categories = [
     {
       id: 1,
-      name: "붕어빵",
+      name: "토스트류",
       image: "https://via.placeholder.com/60?text=붕어빵",
     },
     {
       id: 2,
-      name: "어묵",
+      name: "구이류",
       image: "https://via.placeholder.com/60?text=어묵",
     },
     {
       id: 3,
-      name: "호떡",
+      name: "즉석빵류",
       image: "https://via.placeholder.com/60?text=호떡",
     },
     {
       id: 4,
-      name: "군고구마",
+      name: "빵류",
       image: "https://via.placeholder.com/60?text=군고구마",
     },
     {
       id: 5,
-      name: "떡볶이",
+      name: "분식",
       image: "https://via.placeholder.com/60?text=떡볶이",
     },
     {
       id: 6,
-      name: "순대",
+      name: "버스킹",
       image: "https://via.placeholder.com/60?text=순대",
     },
     {
       id: 7,
-      name: "빵",
+      name: "행사",
       image: "https://via.placeholder.com/60?text=빵",
     },
     {
       id: 8,
-      name: "토스트",
+      name: ":asa",
       image: "https://via.placeholder.com/60?text=토스트",
     },
     {
@@ -123,7 +136,23 @@ const PlaceCerateScreen: React.FC = () => {
   ];
   const [selectedMenu, setSelectedMenu] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [image, setImage] = useState<string | null>(null);
 
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ["images", "videos"],
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    console.log(result);
+
+    if (!result.canceled) {
+      setImage(result.assets[0].uri);
+    }
+  };
 
   const [tagInputText, setTagInputText] = useState<string>(""); // 현재 입력 중인 텍스트
   const [tags, setTags] = useState<string[]>([]); // 태그 배열
@@ -131,11 +160,14 @@ const PlaceCerateScreen: React.FC = () => {
   // 태그 추가 함수
   const addTag = () => {
     if (tagInputText.trim() === "") return; // 공백만 입력된 경우 무시
-    const newTag = `#${tagInputText.trim()}`;
+    if (tags.length >= 10) {
+      alert("태그는 최대 10개까지 추가할 수 있습니다."); // 태그 제한 알림
+      return;
+    }
+    const newTag = `${tagInputText.trim()}`;
     setTags((prevTags) => [...prevTags, newTag]); // 새로운 태그 추가
-    setInputText(""); // 입력 필드 초기화
+    setTagInputText(""); // 입력 필드 초기화
   };
-
 
   // 메뉴 선택 시 호출되는 함수
   const handleSelectCategory = (name: string) => {
@@ -143,34 +175,45 @@ const PlaceCerateScreen: React.FC = () => {
     setModalVisible(false);
   };
 
-  const handleStartDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+  const handleStartDateChange = (
+    event: DateTimePickerEvent,
+    selectedDate?: Date
+  ) => {
     setShowStartDatePicker(false);
     if (selectedDate) {
       setStartDate(selectedDate);
     }
   };
 
-  const handleStartTimeChange = (event: DateTimePickerEvent, selectedTime?: Date) => {
+  const handleStartTimeChange = (
+    event: DateTimePickerEvent,
+    selectedTime?: Date
+  ) => {
     setShowStartTimePicker(false);
     if (selectedTime) {
       setStartTime(selectedTime);
     }
   };
 
-  const handleEndDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
+  const handleEndDateChange = (
+    event: DateTimePickerEvent,
+    selectedDate?: Date
+  ) => {
     setShowEndDatePicker(false);
     if (selectedDate) {
       setEndDate(selectedDate);
     }
   };
 
-  const handleEndTimeChange = (event: DateTimePickerEvent, selectedTime?: Date) => {
+  const handleEndTimeChange = (
+    event: DateTimePickerEvent,
+    selectedTime?: Date
+  ) => {
     setShowEndTimePicker(false);
     if (selectedTime) {
       setEndTime(selectedTime);
     }
   };
-
 
   const storeTypes: { [key: number]: string } = {
     1: "길거리",
@@ -190,9 +233,23 @@ const PlaceCerateScreen: React.FC = () => {
   const days: string[] = ["월", "화", "수", "목", "금", "토", "일"];
   const router = useRouter();
 
-  const createPlace = () => {
-    // 닉네임 작성 화면으로 이동
-    router.replace("./nickname");
+  const createPlace = async () => {
+    console.log( process.env.EXPO_PUBLIC_BACKEND_LOCAL);
+      try {
+        const response = await axiosInstance.post(requests.placeCreate, examplePlace, {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+    
+        console.log("응답 데이터:", response.data);
+      
+      } catch (error) {
+        console.error("데이터 전송 실패:", error);
+       
+       
+      }
+    
   };
   const togglePaymentMethod = (method: string) => {
     setSelectedPaymentMethods((prev) =>
@@ -201,8 +258,6 @@ const PlaceCerateScreen: React.FC = () => {
         : [...prev, method]
     );
   };
-
- 
 
   const combineDateAndTime = (date: Date, time: Date): Date => {
     const combined = new Date(date);
@@ -291,7 +346,9 @@ const PlaceCerateScreen: React.FC = () => {
           style={styles.button}
           onPress={() => setShowStartDatePicker(true)}
         >
-          <Text style={styles.buttonText}>{startDate.toLocaleDateString()}</Text>
+          <Text style={styles.buttonText}>
+            {startDate.toLocaleDateString()}
+          </Text>
         </TouchableOpacity>
 
         {showStartDatePicker && (
@@ -376,101 +433,96 @@ const PlaceCerateScreen: React.FC = () => {
         <Text style={styles.result}>
           {formatDate(combinedStartDateTime)} 부터
         </Text>
-        <Text style={styles.result}>{formatDate(combinedEndDateTime)} 까지</Text>
+        <Text style={styles.result}>
+          {formatDate(combinedEndDateTime)} 까지
+        </Text>
       </View>
       <View style={styles.menuCategoryContainer}>
-    
-        <Text style={styles.title}>메뉴 카테고리</Text>
+        <Text style={styles.title}>카테고리</Text>
         <TouchableOpacity
           style={styles.addButton}
           onPress={() => setModalVisible(true)}
         >
           <Text style={styles.addButtonText}>추가하기</Text>
         </TouchableOpacity>
-    
-
-   
 
         {/* 카테고리 선택 모달 */}
         <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>카테고리 선택</Text>
-            <FlatList
-              data={categories}
-              keyExtractor={(item) => item.id.toString()}
-              numColumns={4} // 3열로 구성
-              renderItem={({ item, index }) => (
-                <View
-                  style={[
-                    styles.categoryItem,
-                    index === categories.length - 1 && styles.lastItem, // 마지막 아이템에 스타일 추가
-                  ]}
-                >
-                  <TouchableOpacity
-                    onPress={() => handleSelectCategory(item.name)}
-                  >
-                    <Image
-                      source={{ uri: item.image }}
-                      style={styles.categoryImage}
-                    />
-                    <Text style={styles.categoryName}>{item.name}</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-              contentContainerStyle={styles.flatListContainer}
-            />
-            <TouchableOpacity
-              style={styles.closeButton}
-              onPress={() => setModalVisible(false)}
-            >
-              <Text style={styles.closeButtonText}>닫기</Text>
-            </TouchableOpacity>
+          visible={modalVisible}
+          animationType="slide"
+          transparent={true}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>카테고리 선택</Text>
+              <View style={{ flex: 1, width: "100%" }}>
+              <FlashList
+                data={categories}
+                keyExtractor={(item) => item.id.toString()}
+                numColumns={4} // 4열로 구성
+                estimatedItemSize={100} // 성능 최적화를 위한 예상 크기
+                renderItem={({ item }) => (
+                  <View style={styles.categoryItem}>
+                    <TouchableOpacity
+                      onPress={() => handleSelectCategory(item.name)}
+                    >
+                      <Image
+                        source={{ uri: item.image }}
+                        style={styles.categoryImage}
+                      />
+                      <Text style={styles.categoryName}>{item.name}</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                contentContainerStyle={styles.flatListContainer}
+              />
+                   </View>
+              <TouchableOpacity
+                style={styles.closeButton}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.closeButtonText}>닫기</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </Modal>
-        
+        </Modal>
       </View>
-         {/* 선택된 메뉴를 다음 줄에 표시 */}
-         {selectedMenu && (
+      {/* 선택된 메뉴를 다음 줄에 표시 */}
+      {selectedMenu && (
         <View style={styles.selectedMenuContainer}>
-          <Text style={styles.selectedMenuText}>선택된 메뉴: {selectedMenu}</Text>
+          <Text style={styles.selectedMenuText}>{selectedMenu}</Text>
         </View>
       )}
 
-<Text style={styles.title}>태그 입력</Text>
+      <Text style={styles.title}>태그 입력 (최대 10개 {tags.length}/10)</Text>
 
-{/* 텍스트 입력 필드와 추가 버튼 */}
-<View style={styles.tagInputContainer}>
-  <TextInput
-    style={styles.tagInput}
-    value={tagInputText}
-    onChangeText={setTagInputText}
-    placeholder="태그를 입력하세요"
-    placeholderTextColor="#aaa"
-  />
-  <TouchableOpacity style={styles.addButton} onPress={addTag}>
-    <Text style={styles.addButtonText}>추가</Text>
-  </TouchableOpacity>
-</View>
+      {/* 텍스트 입력 필드와 추가 버튼 */}
+      <View style={styles.tagInputContainer}>
+        <TextInput
+          style={styles.tagInput}
+          value={tagInputText}
+          onChangeText={setTagInputText}
+          placeholder="태그를 입력하세요"
+          placeholderTextColor="#aaa"
+        />
+        <TouchableOpacity style={styles.addButton} onPress={addTag}>
+          <Text style={styles.addButtonText}>추가</Text>
+        </TouchableOpacity>
+      </View>
 
- {/* 태그 표시 */}
- <View style={styles.tagContainer}>
+      {/* 태그 표시 */}
+      <View style={styles.tagContainer}>
         {tags.length > 0 ? (
           tags.map((tag: string, index: number) => (
             <View key={index} style={styles.tagItem}>
-              <Text style={styles.tagText}>{tag}</Text>
+              <Text style={styles.tagText}>#{tag}</Text>
             </View>
           ))
         ) : (
           <Text style={styles.noTagsText}>태그가 없습니다.</Text>
         )}
-</View>
+      </View>
       <Text style={styles.title}>제보자 형태* (선택)</Text>
       <View style={styles.optionsContainer}>
         {Object.entries(ownerTypes).map(([key, type]) => (
@@ -482,13 +534,17 @@ const PlaceCerateScreen: React.FC = () => {
             ]}
             onPress={() => setSelectedOwnerTypes(type)} // 선택된 타입 설정
           >
-            <Text style={styles.optionText}>{  type ? "본인" :"제보자"}</Text>
+            <Text style={styles.optionText}>{type ? "본인" : "제보자"}</Text>
           </TouchableOpacity>
         ))}
       </View>
-         {/* 입력 영역 */}
-         <Text style={styles.title}>코멘트 </Text>
-         <TextInput
+
+      <Text style={styles.title}>사진 </Text>
+      <Button title="Pick an image from camera roll" onPress={pickImage} />
+      {image && <Image source={{ uri: image }} style={styles.image} />}
+      {/* 입력 영역 */}
+      <Text style={styles.title}>코멘트 </Text>
+      <TextInput
         style={styles.textInput}
         multiline
         placeholder="Type your text here"
@@ -497,11 +553,7 @@ const PlaceCerateScreen: React.FC = () => {
         placeholderTextColor="#aaa"
       />
 
-    
-
-      
-
-      <TouchableOpacity style={styles.registerButton}>
+      <TouchableOpacity style={styles.registerButton} onPress={()=>createPlace()}>
         <Text style={styles.registerButtonText}>가게 등록하기</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -588,7 +640,6 @@ const styles = StyleSheet.create({
   menuCategoryContainer: {
     flexDirection: "row",
     alignItems: "flex-start",
-   
   },
   addButton: {
     backgroundColor: "#ffcccb",
@@ -614,49 +665,66 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     color: "#333",
-     textAlign:"left"
+    textAlign: "left",
   },
   modalContainer: {
     flex: 1,
-    justifyContent: "flex-end",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // 모달 배경
   },
   modalContent: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    backgroundColor: "white",
+    borderRadius: 10,
+   padding:10,
+    width: "100%",
+    height: "70%", // 고정된 높이 설정
+    alignItems: "center",
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginBottom: 10,
   },
   flatListContainer: {
-    justifyContent: "flex-start", // 왼쪽 정렬
-    alignItems: "flex-start", // 아이템을 왼쪽으로 정렬
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 10, // 아이템 상하 여백
   },
   categoryItem: {
-    flex: 1,
-    alignItems: "center",
-    margin: 10,
+    flex: 1, // 열 안에서 균등한 크기
+    alignItems: 'center',
+    justifyContent: 'center',
+    margin: 5, // 아이템 간격
+    
   },
-  lastItem: {
-    width: "25%", // 마지막 아이템 너비를 그대로 유
-    alignItems: "center",
-    margin: 10,
-  },
-
   categoryImage: {
-    width: 60,
+    width: 60, // 이미지 크기
     height: 60,
-    marginBottom: 5,
+    borderRadius: 30, // 둥근 이미지
+    backgroundColor: '#d3d3d3', // 임시 배경색
   },
   categoryName: {
-    fontSize: 14,
-    textAlign: "center",
-    color: "#333",
+    marginTop: 5,
+    fontSize: 12,
+    textAlign: 'center', // 텍스트 가운데 정렬
   },
+  closeButton: {
+    marginTop: 20,
+    backgroundColor: '#f5a9a9',
+    borderRadius: 10,
+    padding: 10,
+    alignItems: 'center',
+    width: '80%',
+  },
+  closeButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+ 
+
+
   menuItem: {
     padding: 15,
     borderBottomWidth: 1,
@@ -666,31 +734,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
   },
-  closeButton: {
-    marginTop: 10,
-    backgroundColor: "#ffcccb",
-    paddingVertical: 10,
-    alignItems: "center",
-    borderRadius: 10,
-  },
-  closeButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
+ 
   tagInputContainer: {
-    width:"30%",
     flexDirection: "row", // 입력 필드와 버튼을 같은 줄에 배치
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 10,
   },
   tagContainer: {
     flexDirection: "row", // 태그들을 한 줄에 나란히 배치
     flexWrap: "wrap", // 줄이 넘어가면 다음 줄로 이동
+
     padding: 10,
-    
-   
-   
- 
+    paddingLeft: 0,
   },
   tagItem: {
     backgroundColor: "#ffcccb", // 타원형 배경색
@@ -737,8 +792,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "#fff",
   },
- 
- 
+
   registerButton: {
     backgroundColor: "#ff6f61",
     paddingVertical: 15,
@@ -783,6 +837,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#555",
     marginBottom: 5,
+  },
+  image: {
+    width: 200,
+    height: 200,
   },
 });
 

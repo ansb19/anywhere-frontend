@@ -15,7 +15,7 @@ export default function PlaceEditScreen() {
   const navigation = useNavigation();
   const local = useLocalSearchParams().id;
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     navigation.setOptions({
       headerShown: false
     });
