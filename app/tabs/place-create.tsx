@@ -50,9 +50,6 @@ const PlaceCerateScreen: React.FC = () => {
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<
     string[]
   >([]);
-  const [selectedDays, setSelectedDays] = useState<string[]>([]);
-  const [openingTime, setOpeningTime] = useState<string>("");
-  const [closingTime, setClosingTime] = useState<string>("");
 
   const user = useAppSelector((state) => state.auth.user);
   const [selectedStoreType, setSelectedStoreType] = useState<string | null>(
@@ -443,7 +440,7 @@ const PlaceCerateScreen: React.FC = () => {
           style={styles.addButton}
           onPress={() => setModalVisible(true)}
         >
-          <Text style={styles.addButtonText}>추가하기</Text>
+          <Text style={styles.addButtonText}>선택하기</Text>
         </TouchableOpacity>
 
         {/* 카테고리 선택 모달 */}
@@ -540,7 +537,9 @@ const PlaceCerateScreen: React.FC = () => {
       </View>
 
       <Text style={styles.title}>사진 </Text>
-      <Button title="Pick an image from camera roll" onPress={pickImage} />
+      <TouchableOpacity style={styles.imageButton} onPress={()=>pickImage()}>
+        <Text style={styles.imageButtonText}>사진 추가하기</Text>
+      </TouchableOpacity>
       {image && <Image source={{ uri: image }} style={styles.image} />}
       {/* 입력 영역 */}
       <Text style={styles.title}>코멘트 </Text>
@@ -793,6 +792,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
 
+  imageButton: {
+    backgroundColor: "#4CAF50",
+    paddingVertical: 10,
+    alignItems: "center",
+    borderRadius: 30,
+    marginBottom: 20,
+  },
+  imageButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
   registerButton: {
     backgroundColor: "#ff6f61",
     paddingVertical: 15,
