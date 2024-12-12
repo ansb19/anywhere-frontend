@@ -24,57 +24,104 @@ import * as ImagePicker from "expo-image-picker";
 import { FlashList } from "@shopify/flash-list";
 import axios from "axios";
 import requests from "@/api/request";
-import { examplePlace } from "@/types/place";
+
 import axiosInstance from "@/api/axiosInstance";
+import { Place, placeData } from "@/types/place";
+import { Category, categoryData } from "@/types/categoryData";
+import { subcategoryData } from "@/types/subcategoryData";
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 console.log(SCREEN_WIDTH);
 // export interface Place {
-
-//   place_name: string; // 장소 이름 (최대 40자)
-//   nickname: string; // 닉네임 (Foreign Key, 최대 20자)
-//   lat: number; // 위도
-//   lon: number; // 경도
-//   category_id: number; // 카테고리 ID (Foreign Key)
-//   created_at: Date; // 생성 일시
-//   start_date: Date; // 시작 일시
-//   end_date: Date; // 종료 일시
-//   photo_s3_url: string[]; // S3 URL 배열 (최대 500개)
-//   charge_id: number; // 요금 ID (Foreign Key)
-//   comment: string; // 코멘트 (최대 1000자)
-//   tag: string[]; // 태그 배열 (최대 1000개)
-//   exist_count: number; // 존재 확인 수
-//   not_exist_count: number; // 존재하지 않음 확인 수
-//   owner: boolean; // true: 가게 주인, false: 제보자
+//   place_id: number;
+//   place_name: string;
+//   user_id: number;
+//   lat: number;
+//   lon: number;
+//   category_id: number;
+//   start_date: Date;
+//   end_date: Date;
+//   photo_s3_url: string[];
+//   place_charge: number[];
+//   comment: string;
+//   tag: string[];
+//   exist_count: number;
+//   non_exist_count: number;
+//   owner: boolean; // 제보자: false, 작성자: true
+ 
 // }
 const PlaceCerateScreen: React.FC = () => {
-  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<
-    string[]
-  >([]);
+  const router = useRouter();
+    // 메뉴 항목 상태
+    const categories = [
+      {
+        id: 1,
+        name: "토스트류",
+        image: "https://via.placeholder.com/60?text=붕어빵",
+      },
+      {
+        id: 2,
+        name: "구이류",
+        image: "https://via.placeholder.com/60?text=어묵",
+      },
+      {
+        id: 3,
+        name: "즉석빵류",
+        image: "https://via.placeholder.com/60?text=호떡",
+      },
+      {
+        id: 4,
+        name: "빵류",
+        image: "https://via.placeholder.com/60?text=군고구마",
+      },
+      {
+        id: 5,
+        name: "분식",
+        image: "https://via.placeholder.com/60?text=떡볶이",
+      },
+      {
+        id: 6,
+        name: "버스킹",
+        image: "https://via.placeholder.com/60?text=순대",
+      },
+      {
+        id: 7,
+        name: "행사",
+        image: "https://via.placeholder.com/60?text=빵",
+      },
+      {
+        id: 8,
+        name: ":asa",
+        image: "https://via.placeholder.com/60?text=토스트",
+      },
+      {
+        id: 9,
+        name: "커피/디저트",
+        image: "https://via.placeholder.com/60?text=커피",
+      },
+    ];
+
 
   const user = useAppSelector((state) => state.auth.user);
-  const [selectedStoreType, setSelectedStoreType] = useState<string | null>(
-    null
-  );
-  const [selectedOwnerTypes, setSelectedOwnerTypes] = useState<boolean>(false);
+  const [place, setPlace] = useState<Place>(placeData);
 
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(["현금"]); // 기본적으로 "현금" 선택
+
+  const [selectedStoreType, setSelectedStoreType] = useState<number>(1); // 선택된 ID 저장// 스토어 타입
+  const [selectedOwnerTypes, setSelectedOwnerTypes] = useState<boolean>(false);// owner 타입
+  const [placeInputText, setPlaceInputText] = useState<string>(""); // 입력된 텍스트 상태
   const [inputText, setInputText] = useState<string>(""); // 입력된 텍스트 상태
 
-  // 현재 시간 설정
-  const now = new Date();
-  // 오늘의 끝 시간(23:59:59) 설정
-  const endOfToday = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate(),
-    23,
-    59,
-    59
-  );
+  const [selectedMenu, setSelectedMenu] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [image, setImage] = useState<string | null>(null);
 
-  const [startDate, setStartDate] = useState<Date>(new Date());
-  const [startTime, setStartTime] = useState<Date>(new Date());
-  const [endDate, setEndDate] = useState<Date>(new Date());
-  const [endTime, setEndTime] = useState<Date>(new Date());
+  const [tagInputText, setTagInputText] = useState<string>(""); // 현재 입력 중인 텍스트
+  const [tags, setTags] = useState<string[]>([]); // 태그 배열
+
+  const [startDate, setStartDate] = useState<Date>(new Date()); // 시작시간
+  const [startTime, setStartTime] = useState<Date>(new Date()); // 시작타임
+  const [endDate, setEndDate] = useState<Date>(new Date()); // 끝나는 시간
+  const [endTime, setEndTime] = useState<Date>(new Date()); // 끝나는 타임
 
   const [showStartDatePicker, setShowStartDatePicker] =
     useState<boolean>(false);
@@ -83,57 +130,53 @@ const PlaceCerateScreen: React.FC = () => {
   const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState<boolean>(false);
 
-  // 메뉴 항목 상태
-  const categories = [
-    {
-      id: 1,
-      name: "토스트류",
-      image: "https://via.placeholder.com/60?text=붕어빵",
-    },
-    {
-      id: 2,
-      name: "구이류",
-      image: "https://via.placeholder.com/60?text=어묵",
-    },
-    {
-      id: 3,
-      name: "즉석빵류",
-      image: "https://via.placeholder.com/60?text=호떡",
-    },
-    {
-      id: 4,
-      name: "빵류",
-      image: "https://via.placeholder.com/60?text=군고구마",
-    },
-    {
-      id: 5,
-      name: "분식",
-      image: "https://via.placeholder.com/60?text=떡볶이",
-    },
-    {
-      id: 6,
-      name: "버스킹",
-      image: "https://via.placeholder.com/60?text=순대",
-    },
-    {
-      id: 7,
-      name: "행사",
-      image: "https://via.placeholder.com/60?text=빵",
-    },
-    {
-      id: 8,
-      name: ":asa",
-      image: "https://via.placeholder.com/60?text=토스트",
-    },
-    {
-      id: 9,
-      name: "커피/디저트",
-      image: "https://via.placeholder.com/60?text=커피",
-    },
-  ];
-  const [selectedMenu, setSelectedMenu] = useState<string | null>(null);
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [image, setImage] = useState<string | null>(null);
+  const [selectedDays, setSelectedDays] = useState<string[]>(["월"]);
+  const updatePlace = () => {
+    setPlace((prev) => ({
+      ...prev,
+      user_id : user!.user_id,
+      place_name: placeInputText,
+      category_id: selectedStoreType,
+      start_date: startDate,
+      end_date: endDate,
+      photo_s3_url: image ? [image] : [],
+      place_charge: selectedPaymentMethods.map((method) => parseInt(method) || 0),
+      week: selectedDays,
+      comment: inputText,
+      tag: tags,
+      owner: selectedOwnerTypes,
+    }));
+
+    console.log("Updated Place:", place);
+  };
+
+
+  
+ 
+  const [selectedSubcategories, setSelectedSubcategories] = useState<number[]>([]); // 선택된 서브카테고리 ID 배열
+
+  // 서브카테고리 선택 핸들러
+  const toggleSubcategory = (id: number) => {
+    setSelectedSubcategories((prev) =>
+      prev.includes(id)
+        ? prev.filter((subcategoryId) => subcategoryId !== id) // 선택된 항목 제거
+        : [...prev, id] // 새로운 항목 추가
+    );
+  };
+  // 결제 방식 선택/해제 함수
+  const togglePaymentMethod = (method: string) => {
+    setSelectedPaymentMethods((prev) => {
+      // 이미 선택된 항목 제거하려는 경우, 최소 하나는 유지
+      if (prev.includes(method)) {
+        if (prev.length === 1) {
+          return prev; // 하나만 남아있으면 제거 금지
+        }
+        return prev.filter((m) => m !== method); // 선택된 항목 제거
+      }
+      // 새 항목 추가
+      return [...prev, method];
+    });
+  };
 
   const pickImage = async () => {
     // No permissions request is necessary for launching the image library
@@ -151,8 +194,7 @@ const PlaceCerateScreen: React.FC = () => {
     }
   };
 
-  const [tagInputText, setTagInputText] = useState<string>(""); // 현재 입력 중인 텍스트
-  const [tags, setTags] = useState<string[]>([]); // 태그 배열
+
 
   // 태그 추가 함수
   const addTag = () => {
@@ -228,12 +270,27 @@ const PlaceCerateScreen: React.FC = () => {
   };
 
   const days: string[] = ["월", "화", "수", "목", "금", "토", "일"];
-  const router = useRouter();
 
+
+
+  // 요일 선택/해제 함수
+  const toggleDay = (day: string) => {
+    setSelectedDays((prev) => {
+      if (prev.includes(day)) {
+        if (prev.length === 1) {
+          // 마지막 하나 남은 경우 제거 금지
+          return prev;
+        }
+        return prev.filter((d) => d !== day); // 선택된 항목 제거
+      }
+      // 새로운 항목 추가
+      return [...prev, day];
+    });
+  };
   const createPlace = async () => {
     console.log( process.env.EXPO_PUBLIC_BACKEND_LOCAL);
       try {
-        const response = await axiosInstance.post(requests.placeCreate, examplePlace, {
+        const response = await axiosInstance.post(requests.placeCreate, place, {
           headers: {
             "Content-Type": "application/json",
           },
@@ -247,13 +304,6 @@ const PlaceCerateScreen: React.FC = () => {
        
       }
     
-  };
-  const togglePaymentMethod = (method: string) => {
-    setSelectedPaymentMethods((prev) =>
-      prev.includes(method)
-        ? prev.filter((item) => item !== method)
-        : [...prev, method]
-    );
   };
 
   const combineDateAndTime = (date: Date, time: Date): Date => {
@@ -278,13 +328,19 @@ const PlaceCerateScreen: React.FC = () => {
   const combinedStartDateTime = combineDateAndTime(startDate, startTime);
   // 끝 날짜와 시간 합치기
   const combinedEndDateTime = combineDateAndTime(endDate, endTime);
+
+  const selectedSubcategoryData = subcategoryData.filter((item) =>
+    selectedSubcategories.includes(item.id)
+  );
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>가게 제보</Text>
       <Text style={styles.title}>가게 이름*</Text>
       <TextInput
         style={styles.addressInput}
-        placeholder="여기에 주소를 입력해주세요"
+        value={placeInputText}
+        onChangeText={setPlaceInputText}
+        placeholder="가게 이름"
         placeholderTextColor="#aaa"
       />
 
@@ -305,18 +361,25 @@ const PlaceCerateScreen: React.FC = () => {
       <Text style={styles.title}>가게형태* (선택)</Text>
 
       <View style={styles.optionsContainer}>
-        {Object.entries(storeTypes).map(([key, type]) => (
-          <TouchableOpacity
-            key={key} // 객체의 키를 사용
+      {categoryData.map((type: Category) => (
+        <TouchableOpacity
+          key={type.id} // id를 key로 사용
+          style={[
+            styles.option,
+            selectedStoreType === type.id && styles.selectedOption, // id로 비교
+          ]}
+          onPress={() => setSelectedStoreType(type.id)} // 선택된 id 설정
+        >
+          <Text
             style={[
-              styles.option,
-              selectedStoreType === type && styles.selectedOption,
+              styles.optionText,
+              selectedStoreType === type.id && styles.selectedOption,
             ]}
-            onPress={() => setSelectedStoreType(type)} // 선택된 타입 설정
           >
-            <Text style={styles.optionText}>{type}</Text>
-          </TouchableOpacity>
-        ))}
+            {type.name} {/* 버튼에는 name 표시 */}
+          </Text>
+        </TouchableOpacity>
+      ))}
       </View>
 
       <Text style={styles.title}>결제방식* (선택) *다중선택 가능</Text>
@@ -334,6 +397,33 @@ const PlaceCerateScreen: React.FC = () => {
           </TouchableOpacity>
         ))}
       </View>
+
+      <Text style={styles.title}>요일 선택</Text>
+      <FlashList
+        data={days}
+        keyExtractor={(item, index) => index.toString()}
+        numColumns={3} // 3열로 표시
+        estimatedItemSize={50} // FlashList 성능 최적화를 위한 높이 추정치
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={[
+              styles.circle,
+              selectedDays.includes(item) && styles.selectedCircle,
+            ]}
+            onPress={() => toggleDay(item)}
+          >
+            <Text
+              style={[
+                styles.circleText,
+                selectedDays.includes(item) && styles.selectedCircleText,
+              ]}
+            >
+              {item}
+            </Text>
+          </TouchableOpacity>
+        )}
+      />
+     
 
       <Text style={styles.title}>출몰 시기* (설정)</Text>
 
@@ -433,6 +523,10 @@ const PlaceCerateScreen: React.FC = () => {
         <Text style={styles.result}>
           {formatDate(combinedEndDateTime)} 까지
         </Text>
+        <Text style={styles.result}>
+        선택된 요일 : {selectedDays.join(", ")}
+        </Text>
+       
       </View>
       <View style={styles.menuCategoryContainer}>
         <Text style={styles.title}>카테고리</Text>
@@ -455,22 +549,33 @@ const PlaceCerateScreen: React.FC = () => {
               <Text style={styles.modalTitle}>카테고리 선택</Text>
               <View style={{ flex: 1, width: "100%" }}>
               <FlashList
-                data={categories}
+                data={subcategoryData.filter((item) => item.category_id === selectedStoreType)}
                 keyExtractor={(item) => item.id.toString()}
                 numColumns={4} // 4열로 구성
                 estimatedItemSize={100} // 성능 최적화를 위한 예상 크기
                 renderItem={({ item }) => (
-                  <View style={styles.categoryItem}>
-                    <TouchableOpacity
-                      onPress={() => handleSelectCategory(item.name)}
-                    >
-                      <Image
-                        source={{ uri: item.image }}
-                        style={styles.categoryImage}
-                      />
-                      <Text style={styles.categoryName}>{item.name}</Text>
-                    </TouchableOpacity>
-                  </View>
+                    <View style={styles.categoryItem}>
+              <TouchableOpacity
+                onPress={() => toggleSubcategory(item.id)}
+                style={[
+                  styles.subcategoryButton,
+                  selectedSubcategories.includes(item.id) &&
+                    styles.selectedSubcategoryButton,
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.categoryName,
+                    selectedSubcategories.includes(item.id) &&
+                      styles.selectedCategoryName,
+                  ]}
+                >
+                  {item.name}
+                </Text>
+              </TouchableOpacity>
+            </View>
+      
+     
                 )}
                 contentContainerStyle={styles.flatListContainer}
               />
@@ -486,11 +591,20 @@ const PlaceCerateScreen: React.FC = () => {
         </Modal>
       </View>
       {/* 선택된 메뉴를 다음 줄에 표시 */}
-      {selectedMenu && (
-        <View style={styles.selectedMenuContainer}>
-          <Text style={styles.selectedMenuText}>{selectedMenu}</Text>
-        </View>
-      )}
+    
+       <View style={styles.selectedContainer}>
+       <Text style={styles.selectedTitle}>선택된 서브카테고리:</Text>
+       {selectedSubcategoryData.length > 0 ? (
+         selectedSubcategoryData.map((item) => (
+           <Text key={item.id} style={styles.selectedItem}>
+             {item.name}
+           </Text>
+         ))
+       ) : (
+         <Text style={styles.noSelection}>선택된 항목이 없습니다.</Text>
+       )}
+     </View>
+   
 
       <Text style={styles.title}>태그 입력 (최대 10개 {tags.length}/10)</Text>
 
@@ -552,7 +666,7 @@ const PlaceCerateScreen: React.FC = () => {
         placeholderTextColor="#aaa"
       />
 
-      <TouchableOpacity style={styles.registerButton} onPress={()=>createPlace()}>
+      <TouchableOpacity style={styles.registerButton} onPress={()=>updatePlace()}>
         <Text style={styles.registerButtonText}>가게 등록하기</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -577,6 +691,18 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     marginBottom: 10,
+  },
+  dayText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  selectedDayText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  selectedDaysText: {
+    marginTop: 20,
+    fontSize: 16,
   },
   addressInput: {
     flex: 1,
@@ -651,15 +777,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
   },
-  selectedMenuContainer: {
-    marginBottom: 20, // 선택된 메뉴와 다음 요소 간격
-    marginTop: 5, // 메뉴 카테고리와 선택된 메뉴 간격
-  },
-  selectedMenuLabel: {
-    fontSize: 16,
-    color: "#555",
-    marginBottom: 5,
-  },
+
   selectedMenuText: {
     fontSize: 16,
     fontWeight: "bold",
@@ -703,10 +821,24 @@ const styles = StyleSheet.create({
     borderRadius: 30, // 둥근 이미지
     backgroundColor: '#d3d3d3', // 임시 배경색
   },
+  subcategoryButton: {
+    padding: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  selectedSubcategoryButton: {
+    backgroundColor: "#007BFF",
+    borderColor: "#0056b3",
+  },
   categoryName: {
-    marginTop: 5,
-    fontSize: 12,
-    textAlign: 'center', // 텍스트 가운데 정렬
+    fontSize: 14,
+    color: "#333",
+  },
+  selectedCategoryName: {
+    color: "#fff",
+    fontWeight: "bold",
   },
   closeButton: {
     marginTop: 20,
@@ -722,6 +854,23 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
  
+  selectedContainer: {
+ 
+  },
+  selectedTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  selectedItem: {
+    fontSize: 14,
+    color: "#333",
+    marginBottom: 5,
+  },
+  noSelection: {
+    fontSize: 14,
+    color: "#999",
+  },
 
 
   menuItem: {
@@ -852,6 +1001,29 @@ const styles = StyleSheet.create({
   image: {
     width: 200,
     height: 200,
+  },
+  circle: {
+    margin: 10,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f0f0f0",
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  selectedCircle: {
+    backgroundColor: "#ffcccb",
+    borderColor: "#ff6f61",
+  },
+  circleText: {
+    fontSize: 16,
+    color: "#333",
+  },
+  selectedCircleText: {
+    color: "#fff",
+    fontWeight: "bold",
   },
 });
 

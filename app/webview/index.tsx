@@ -9,11 +9,17 @@ const WebViewScreen = () => {
     const { url } = useLocalSearchParams(); // URL 전달받기
     const router = useRouter();
     const dispatch = useDispatch();
-
+    const [showWebView, setShowWebView] = useState(false);
     const webViewRef = useRef<WebView>(null); // WebView 타입 명시
 
     const handleWebViewMessage = (event: any) => {
+        const exp = "code=";
+        const searchIdx = event.nativeEvent.url.indexOf(exp);
+        if (searchIdx !== -1) {
+      
+      
         try {
+            console.log('WebView에서 받은 메시지:', event.nativeEvent.data);
             const messageData = JSON.parse(event.nativeEvent.data);
             console.log('WebView에서 받은 메시지:', messageData);
 
@@ -31,10 +37,12 @@ const WebViewScreen = () => {
             );
 
             // 닉네임 페이지로 리다이렉트
-            router.replace('./auth/nickname');
+            // router.replace('./auth/nickname');
         } catch (error) {
             console.error('WebView 메시지 처리 오류:', error);
             router.replace('/+not-found'); // 오류 발생 시 에러 페이지로 이동
+        }
+          // 로그인 성공 시
         }
     };
 
@@ -44,10 +52,10 @@ const WebViewScreen = () => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.loadingOverlay}>
+            {/* <View style={styles.loadingOverlay}>
                 <ActivityIndicator size="large" color="#0000ff" />
                 <Text style={styles.loadingText}>로그인 중...</Text>
-            </View>
+            </View> */}
             <WebView
                 ref={webViewRef}
                 source={{ uri: String(url) }}
@@ -58,7 +66,7 @@ const WebViewScreen = () => {
                     const pageContent = document.body.innerText; 
                     window.ReactNativeWebView.postMessage(pageContent);
                 `}
-                style={{ display: 'none', flex: 1 }}
+                // style={{ display: 'none', flex: 1 }}
             />
         </View>
     );

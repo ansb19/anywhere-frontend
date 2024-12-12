@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
-import React, { useLayoutEffect } from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,

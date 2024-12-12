@@ -1,6 +1,7 @@
 import axiosInstance from '@/api/axiosInstance';
 import { requests } from '@/api/request';
 import { User } from '@/types/user';
+import axios from 'axios';
 
  
 
@@ -46,19 +47,22 @@ export const getUser = async (): Promise<{ success: boolean; data: { message: st
   }
 };
 
-export const updateNickname = async (user : User , nickname:string): Promise<{ success: boolean; data: { message: string, data: User } }> => {
+export const updateNickname = async (user : User , nickname:string): Promise<{ success: boolean; message: string, data: User }> => {
   try {
-    console.log( process.env.EXPO_PUBLIC_BACKEND_LOCAL)
-      const response = await axiosInstance.put<{ success: boolean; data: { message: string, data: User }  }>(
-          `${requests.userUpdate(user.user_id)}`,
-          { nickname }
-      );
-      console.log('닉네임 업데이트 성공:', response.data);
-      return response.data;
-  } catch (error) {
-      console.error('닉네임 업데이트 오류:', error);
-      throw error;
-  }
+    const response = await axiosInstance.put<{ success: boolean; message: string; data: User }>(
+        `${requests.userUpdate(user.user_id)}`,
+        {nickname : nickname }
+    );
+    console.log('서버 응답 데이터:', response.data);
+    return response.data;
+} catch (error) {
+    if (axios.isAxiosError(error)) {
+        console.error('Axios 오류 데이터:', error.response?.data);
+    } else {
+        console.error('기타 오류:', error);
+    }
+    throw error;
+}
 };
 
 

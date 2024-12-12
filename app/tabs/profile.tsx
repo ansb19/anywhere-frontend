@@ -13,7 +13,7 @@ import {
 } from "react-native";
 
 import { useState } from 'react';
-import {   createUser,  test } from '@/services/apiService';
+import {   createUser } from '@/services/apiService';
 import { useRouter } from "expo-router";
 
 
@@ -77,14 +77,6 @@ export default function ProfileScreen() {
     <View style={styles.section}>
       <View style={styles.headerRow}>
         <Text style={styles.sectionTitle}>프로필</Text>
-        <TouchableOpacity
-                style={styles.visitButton}
-                onPress={() =>handleCreateAndGetDataUserName()} // 상세 페이지로 이동
-              >
-                <Text style={styles.visitButtonText}>테스트</Text>
-            </TouchableOpacity>
-        <Text style={styles.sectionTitle}>테스트용 : {userInfo?.nickname}</Text>
-
       </View>
      
 
@@ -100,9 +92,11 @@ export default function ProfileScreen() {
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>핸드폰 번호</Text>
             <Text style={styles.infoValue}>
-              {user?.phone_number
-                ? user.phone_number.replace(/(\d{3})-(\d{4})-(\d{4})/, "$1-$2-****")
-                : "정보 없음"}
+            {user?.phone_number
+    ? user.phone_number
+        .replace(/(\d{3})(\d{4})(\d{4})/, "$1-$2-$3") // 하이픈 없는 번호를 처리
+        .replace(/(\d{3})-(\d{4})-(\d{4})/, "$1-$2-****") // 마지막 네 자리를 마스킹
+    : "정보 없음"}
             </Text>
           </View>
           <View style={styles.infoRow}>
