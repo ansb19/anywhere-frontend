@@ -6,6 +6,7 @@ export interface Place {
   lon: number;
 
   category_id: number;
+  subcategory_id : number;
   start_date: Date;
   end_date: Date;
   photo_s3_url: string[];
@@ -30,6 +31,7 @@ export const placeData= {
   lat: 37.5665,
   lon: 126.9780,
   category_id: 0,
+  subcategory_id : 0,
   start_date: new Date(), // 시작 날짜를 현재 날짜로 초기화
   end_date: new Date(), // 끝 날짜를 현재 날짜로 초기화
   photo_s3_url: [],
@@ -55,6 +57,7 @@ export const examplePlaces: Place[] = [
     lat: 37.5665,
     lon: 126.978,
     category_id: 1,
+    subcategory_id: 1,
     start_date: new Date("2023-12-01"),
     end_date: new Date("2023-12-15"),
     photo_s3_url: ["https://example.com/photo1.jpg", "https://example.com/photo2.jpg"],
@@ -73,6 +76,7 @@ export const examplePlaces: Place[] = [
     lat: 35.1796,
     lon: 129.0756,
     category_id: 2,
+    subcategory_id: 2,
     start_date: new Date("2023-12-05"),
     end_date: new Date("2023-12-20"),
     photo_s3_url: ["https://example.com/photo3.jpg"],
@@ -91,6 +95,7 @@ export const examplePlaces: Place[] = [
     lat: 37.5561,
     lon: 126.9238,
     category_id: 3,
+    subcategory_id: 3,
     start_date: new Date("2023-12-10"),
     end_date: new Date("2023-12-25"),
     photo_s3_url: ["https://example.com/photo4.jpg", "https://example.com/photo5.jpg"],
@@ -109,6 +114,7 @@ export const examplePlaces: Place[] = [
     lat: 33.4996,
     lon: 126.5312,
     category_id: 4,
+    subcategory_id: 4,
     start_date: new Date("2024-01-01"),
     end_date: new Date("2024-01-10"),
     photo_s3_url: ["https://example.com/photo6.jpg"],
@@ -127,6 +133,7 @@ export const examplePlaces: Place[] = [
     lat: 37.4979,
     lon: 127.0276,
     category_id: 7,
+    subcategory_id: 7,
     start_date: new Date("2024-02-01"),
     end_date: new Date("2024-02-10"),
     photo_s3_url: ["https://example.com/photo7.jpg"],
@@ -145,6 +152,7 @@ export const examplePlaces: Place[] = [
     lat: 37.3823,
     lon: 126.6569,
     category_id: 6,
+    subcategory_id: 6,
     start_date: new Date("2024-03-15"),
     end_date: new Date("2024-03-30"),
     photo_s3_url: ["https://example.com/photo8.jpg", "https://example.com/photo9.jpg"],
@@ -163,6 +171,7 @@ export const examplePlaces: Place[] = [
     lat: 35.8714,
     lon: 128.6014,
     category_id: 7,
+    subcategory_id: 7,
     start_date: new Date("2024-04-01"),
     end_date: new Date("2024-04-15"),
     photo_s3_url: ["https://example.com/photo10.jpg"],

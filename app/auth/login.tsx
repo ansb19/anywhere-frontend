@@ -6,6 +6,8 @@ import { login,  } from "@/store/slices/authSlice";
 import axios from "axios";
 import * as Linking from 'expo-linking';
 import axiosInstance from "@/api/axiosInstance";
+import requests from "@/api/request";
+
 const LoginScreen = () => {
   const [email, setEmail] = useState("asw0899@aa.aa"); // 이메일 입력 상태
   const router = useRouter();
@@ -62,6 +64,21 @@ const handleKakaoLogin = async () => {
   }
 };
 
+const handleKakaoLogout = async () => {
+  console.log(`${requests.logout}/user_id/1/type/kakao`);
+  try {
+      const response = await axiosInstance.delete(
+        `${requests.logout}/user_id/1/type/kakao`
+    );
+      const kakaoLoginUrl = response.data;
+      console.log(kakaoLoginUrl)
+
+   
+  } catch (error) {
+      console.error('카카오 로그아웃 요청 오류:', error);
+      Alert.alert('오류', '카카오 로그인 요청 중 문제가 발생했습니다.');
+  }
+};
 const fetchSignupData = async (code: string): Promise<void> => {
     try {
         // 회원가입 데이터 확인 API 호출
@@ -93,6 +110,9 @@ const fetchSignupData = async (code: string): Promise<void> => {
       <Button title="Next" onPress={handleLogin} />
       <View style={styles.container}>
             <Button title="카카오로 로그인" onPress={handleKakaoLogin} />
+        </View>
+        <View style={styles.container}>
+            <Button title="카카오로 로그아웃" onPress={handleKakaoLogout} />
         </View>
     </View>
   );

@@ -29,6 +29,24 @@ import axiosInstance from "@/api/axiosInstance";
 import { Place, placeData } from "@/types/place";
 import { Category, categoryData } from "@/types/categoryData";
 import { subcategoryData } from "@/types/subcategoryData";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import s3Client from "@/aws/client";
+import "react-native-get-random-values";
+import { v4 as uuidv4 } from "uuid";
+import AWS from "aws-sdk";
+import MapScreen from "../map/map";
+import MapView, { Marker } from "react-native-maps";
+
+AWS.config.update({
+  region: process.env.EXPO_PUBLIC_AWS_S3_AWS_REGION || "", // AWS 리전
+  credentials: new AWS.Credentials(
+    process.env.EXPO_PUBLIC_AWS_S3_ACCESS_KEY_ID || "", // Access Key
+    process.env.EXPO_PUBLIC_AWS_S3_SECRET_ACCESS_KEY || "" // Secret Key
+  ),
+});
+
+const S3 = new AWS.S3();
+
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 console.log(SCREEN_WIDTH);
 // export interface Place {
@@ -47,73 +65,28 @@ console.log(SCREEN_WIDTH);
 //   exist_count: number;
 //   non_exist_count: number;
 //   owner: boolean; // 제보자: false, 작성자: true
- 
+
 // }
 const PlaceCerateScreen: React.FC = () => {
   const router = useRouter();
-    // 메뉴 항목 상태
-    const categories = [
-      {
-        id: 1,
-        name: "토스트류",
-        image: "https://via.placeholder.com/60?text=붕어빵",
-      },
-      {
-        id: 2,
-        name: "구이류",
-        image: "https://via.placeholder.com/60?text=어묵",
-      },
-      {
-        id: 3,
-        name: "즉석빵류",
-        image: "https://via.placeholder.com/60?text=호떡",
-      },
-      {
-        id: 4,
-        name: "빵류",
-        image: "https://via.placeholder.com/60?text=군고구마",
-      },
-      {
-        id: 5,
-        name: "분식",
-        image: "https://via.placeholder.com/60?text=떡볶이",
-      },
-      {
-        id: 6,
-        name: "버스킹",
-        image: "https://via.placeholder.com/60?text=순대",
-      },
-      {
-        id: 7,
-        name: "행사",
-        image: "https://via.placeholder.com/60?text=빵",
-      },
-      {
-        id: 8,
-        name: ":asa",
-        image: "https://via.placeholder.com/60?text=토스트",
-      },
-      {
-        id: 9,
-        name: "커피/디저트",
-        image: "https://via.placeholder.com/60?text=커피",
-      },
-    ];
-
 
   const user = useAppSelector((state) => state.auth.user);
   const [place, setPlace] = useState<Place>(placeData);
 
-  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<string[]>(["현금"]); // 기본적으로 "현금" 선택
+  const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<
+    number[]
+  >([3]); // 기본적으로 "현금" 선택
 
   const [selectedStoreType, setSelectedStoreType] = useState<number>(1); // 선택된 ID 저장// 스토어 타입
-  const [selectedOwnerTypes, setSelectedOwnerTypes] = useState<boolean>(false);// owner 타입
+  const [selectedSubStoreType, setSelectedSubStoreType] = useState<number>(0); // 선택된 ID 저장// 스토어 타입
+  const [selectedOwnerTypes, setSelectedOwnerTypes] = useState<boolean>(false); // owner 타입
   const [placeInputText, setPlaceInputText] = useState<string>(""); // 입력된 텍스트 상태
-  const [inputText, setInputText] = useState<string>(""); // 입력된 텍스트 상태
+  const [inputCommentText, setInputCommentText] = useState<string>(""); // 입력된 텍스트 상태
 
   const [selectedMenu, setSelectedMenu] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [image, setImage] = useState<string | null>(null);
+  const [selectedImages, setSelectedImages] = useState<string[]>([]); // 로컬 이미지 URI 배열
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]); // S3 URL 배열
 
   const [tagInputText, setTagInputText] = useState<string>(""); // 현재 입력 중인 텍스트
   const [tags, setTags] = useState<string[]>([]); // 태그 배열
@@ -129,42 +102,36 @@ const PlaceCerateScreen: React.FC = () => {
     useState<boolean>(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState<boolean>(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState<boolean>(false);
+  const [latitude, setLatitude] = useState<number>(37.5665); // 초기 위도 설정 (서울)
+  const [longitude, setLongitude] = useState<number>(126.978); // 초기 경도 설정 (서울)
 
   const [selectedDays, setSelectedDays] = useState<string[]>(["월"]);
   const updatePlace = () => {
-    setPlace((prev) => ({
-      ...prev,
-      user_id : user!.user_id,
+    const newAddPlace: Place = {
+      ...place,
+      user_id: user!.user_id,
       place_name: placeInputText,
       category_id: selectedStoreType,
+      subcategory_id: selectedSubStoreType,
       start_date: startDate,
       end_date: endDate,
-      photo_s3_url: image ? [image] : [],
-      place_charge: selectedPaymentMethods.map((method) => parseInt(method) || 0),
+      photo_s3_url: uploadedImageUrls,
+      place_charge: selectedPaymentMethods,
       week: selectedDays,
-      comment: inputText,
+      comment: inputCommentText,
       tag: tags,
       owner: selectedOwnerTypes,
-    }));
+    };
 
-    console.log("Updated Place:", place);
+    console.log("Updated Place:", newAddPlace);
   };
-
-
-  
- 
-  const [selectedSubcategories, setSelectedSubcategories] = useState<number[]>([]); // 선택된 서브카테고리 ID 배열
 
   // 서브카테고리 선택 핸들러
   const toggleSubcategory = (id: number) => {
-    setSelectedSubcategories((prev) =>
-      prev.includes(id)
-        ? prev.filter((subcategoryId) => subcategoryId !== id) // 선택된 항목 제거
-        : [...prev, id] // 새로운 항목 추가
-    );
+    setSelectedSubStoreType(id);
   };
   // 결제 방식 선택/해제 함수
-  const togglePaymentMethod = (method: string) => {
+  const togglePaymentMethod = (method: number) => {
     setSelectedPaymentMethods((prev) => {
       // 이미 선택된 항목 제거하려는 경우, 최소 하나는 유지
       if (prev.includes(method)) {
@@ -178,24 +145,52 @@ const PlaceCerateScreen: React.FC = () => {
     });
   };
 
+  // 이미지 선택 함수
   const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images", "videos"],
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });
 
-    console.log(result);
-
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
+    if (!result.canceled && result.assets && result.assets[0].uri) {
+      setSelectedImages((prev) => [...prev, result.assets[0].uri]); // 새로운 이미지 추가
+    } else {
+      Alert.alert("이미지를 선택하지 않았습니다.");
     }
   };
 
+  // 이미지 업로드 함수
+  const uploadImagesToS3 = async () => {
+    try {
+      const urls: string[] = [];
 
+      for (const imgUri of selectedImages) {
+        const response = await fetch(imgUri); // URI에서 파일 가져오기
+        const blob = await response.blob(); // Blob 형식으로 변환
 
+        const fileName = `uploads/${Date.now()}-${Math.random()
+          .toString(36)
+          .substring(7)}.jpg`; // 고유한 파일 이름 설정
+        const params = {
+          Bucket: "anywhere-photo", // S3 버킷 이름
+          Key: fileName, // 업로드 경로 및 파일 이름
+          Body: blob, // 업로드할 파일
+          ContentType: "image/jpeg", // 파일 MIME 타입
+        };
+
+        const result = await S3.upload(params).promise();
+        urls.push(result.Location); // 업로드된 S3 URL 저장
+      }
+
+      setUploadedImageUrls(urls); // 모든 업로드된 URL 저장
+      Alert.alert("모든 이미지가 성공적으로 업로드되었습니다!");
+    } catch (error) {
+      console.error("S3 업로드 실패:", error);
+      Alert.alert("이미지 업로드에 실패했습니다.");
+    }
+  };
   // 태그 추가 함수
   const addTag = () => {
     if (tagInputText.trim() === "") return; // 공백만 입력된 경우 무시
@@ -206,12 +201,6 @@ const PlaceCerateScreen: React.FC = () => {
     const newTag = `${tagInputText.trim()}`;
     setTags((prevTags) => [...prevTags, newTag]); // 새로운 태그 추가
     setTagInputText(""); // 입력 필드 초기화
-  };
-
-  // 메뉴 선택 시 호출되는 함수
-  const handleSelectCategory = (name: string) => {
-    setSelectedMenu(name);
-    setModalVisible(false);
   };
 
   const handleStartDateChange = (
@@ -254,11 +243,6 @@ const PlaceCerateScreen: React.FC = () => {
     }
   };
 
-  const storeTypes: { [key: number]: string } = {
-    1: "길거리",
-    2: "매장",
-    3: "편의점",
-  };
   const ownerTypes: { [key: number]: boolean } = {
     1: true,
     2: false,
@@ -270,8 +254,6 @@ const PlaceCerateScreen: React.FC = () => {
   };
 
   const days: string[] = ["월", "화", "수", "목", "금", "토", "일"];
-
-
 
   // 요일 선택/해제 함수
   const toggleDay = (day: string) => {
@@ -288,22 +270,18 @@ const PlaceCerateScreen: React.FC = () => {
     });
   };
   const createPlace = async () => {
-    console.log( process.env.EXPO_PUBLIC_BACKEND_LOCAL);
-      try {
-        const response = await axiosInstance.post(requests.placeCreate, place, {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-    
-        console.log("응답 데이터:", response.data);
-      
-      } catch (error) {
-        console.error("데이터 전송 실패:", error);
-       
-       
-      }
-    
+    console.log(process.env.EXPO_PUBLIC_BACKEND_LOCAL);
+    try {
+      const response = await axiosInstance.post(requests.placeCreate, place, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      console.log("응답 데이터:", response.data);
+    } catch (error) {
+      console.error("데이터 전송 실패:", error);
+    }
   };
 
   const combineDateAndTime = (date: Date, time: Date): Date => {
@@ -329,9 +307,24 @@ const PlaceCerateScreen: React.FC = () => {
   // 끝 날짜와 시간 합치기
   const combinedEndDateTime = combineDateAndTime(endDate, endTime);
 
-  const selectedSubcategoryData = subcategoryData.filter((item) =>
-    selectedSubcategories.includes(item.id)
+  const selectedSubcategoryData = subcategoryData.filter(
+    (item) => selectedSubStoreType == item.id
   );
+
+  const handleLocationSelect = (lat: number, lon: number) => {
+    setLatitude(lat);
+    setLongitude(lon);
+  };
+
+  const savePlace = () => {
+    if (latitude === null || longitude === null) {
+      alert("위치가 선택되지 않았습니다.");
+      return;
+    }
+
+    // Place 데이터를 저장하거나 API 호출
+    console.log("위치 저장:", { latitude, longitude });
+  };
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.header}>가게 제보</Text>
@@ -346,40 +339,42 @@ const PlaceCerateScreen: React.FC = () => {
 
       {/* TODO 지도  부분 만들어야함*/}
       <Text style={styles.title}>지도*</Text>
+
+  
+      <Text style={styles.title}>가게 위치 선택</Text>
       <View style={styles.mapContainer}>
-        <Text style={styles.label}>지도</Text>
+        <MapScreen onLocationSelect={handleLocationSelect} />
       </View>
       <View style={styles.locationContainer}>
-        <Text style={styles.label}>
-          위도(lat): <Text style={styles.highlight}>{"12"} </Text>
-        </Text>
-        <Text style={styles.label}>
-          경도(lon): <Text style={styles.highlight}>{"12"}</Text>
-        </Text>
+        <Text style={styles.label}>위도: {latitude ?? "미정"}</Text>
+        <Text style={styles.label}>경도: {longitude ?? "미정"}</Text>
       </View>
+      <TouchableOpacity style={styles.saveButton} onPress={savePlace}>
+        <Text style={styles.saveButtonText}>위치 저장</Text>
+      </TouchableOpacity>
 
       <Text style={styles.title}>가게형태* (선택)</Text>
 
       <View style={styles.optionsContainer}>
-      {categoryData.map((type: Category) => (
-        <TouchableOpacity
-          key={type.id} // id를 key로 사용
-          style={[
-            styles.option,
-            selectedStoreType === type.id && styles.selectedOption, // id로 비교
-          ]}
-          onPress={() => setSelectedStoreType(type.id)} // 선택된 id 설정
-        >
-          <Text
+        {categoryData.map((type: Category) => (
+          <TouchableOpacity
+            key={type.id} // id를 key로 사용
             style={[
-              styles.optionText,
-              selectedStoreType === type.id && styles.selectedOption,
+              styles.option,
+              selectedStoreType === type.id && styles.selectedOption, // id로 비교
             ]}
+            onPress={() => setSelectedStoreType(type.id)} // 선택된 id 설정
           >
-            {type.name} {/* 버튼에는 name 표시 */}
-          </Text>
-        </TouchableOpacity>
-      ))}
+            <Text
+              style={[
+                styles.optionText,
+                selectedStoreType === type.id && styles.selectedOption,
+              ]}
+            >
+              {type.name} {/* 버튼에는 name 표시 */}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       <Text style={styles.title}>결제방식* (선택) *다중선택 가능</Text>
@@ -389,9 +384,10 @@ const PlaceCerateScreen: React.FC = () => {
             key={key} // 객체의 키를 사용
             style={[
               styles.option,
-              selectedPaymentMethods.includes(type) && styles.selectedOption,
+              selectedPaymentMethods.includes(Number(key)) &&
+                styles.selectedOption, // key를 숫자로 변환하여 확인
             ]}
-            onPress={() => togglePaymentMethod(type)} // 선택된 타입 설정
+            onPress={() => togglePaymentMethod(Number(key))} // key를 숫자로 변환하여 전달
           >
             <Text style={styles.optionText}>{type}</Text>
           </TouchableOpacity>
@@ -423,7 +419,6 @@ const PlaceCerateScreen: React.FC = () => {
           </TouchableOpacity>
         )}
       />
-     
 
       <Text style={styles.title}>출몰 시기* (설정)</Text>
 
@@ -524,9 +519,8 @@ const PlaceCerateScreen: React.FC = () => {
           {formatDate(combinedEndDateTime)} 까지
         </Text>
         <Text style={styles.result}>
-        선택된 요일 : {selectedDays.join(", ")}
+          선택된 요일 : {selectedDays.join(", ")}
         </Text>
-       
       </View>
       <View style={styles.menuCategoryContainer}>
         <Text style={styles.title}>카테고리</Text>
@@ -548,38 +542,38 @@ const PlaceCerateScreen: React.FC = () => {
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>카테고리 선택</Text>
               <View style={{ flex: 1, width: "100%" }}>
-              <FlashList
-                data={subcategoryData.filter((item) => item.category_id === selectedStoreType)}
-                keyExtractor={(item) => item.id.toString()}
-                numColumns={4} // 4열로 구성
-                estimatedItemSize={100} // 성능 최적화를 위한 예상 크기
-                renderItem={({ item }) => (
+                <FlashList
+                  data={subcategoryData.filter(
+                    (item) => item.category_id === selectedStoreType
+                  )}
+                  keyExtractor={(item) => item.id.toString()}
+                  numColumns={4} // 4열로 구성
+                  estimatedItemSize={100} // 성능 최적화를 위한 예상 크기
+                  renderItem={({ item }) => (
                     <View style={styles.categoryItem}>
-              <TouchableOpacity
-                onPress={() => toggleSubcategory(item.id)}
-                style={[
-                  styles.subcategoryButton,
-                  selectedSubcategories.includes(item.id) &&
-                    styles.selectedSubcategoryButton,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.categoryName,
-                    selectedSubcategories.includes(item.id) &&
-                      styles.selectedCategoryName,
-                  ]}
-                >
-                  {item.name}
-                </Text>
-              </TouchableOpacity>
-            </View>
-      
-     
-                )}
-                contentContainerStyle={styles.flatListContainer}
-              />
-                   </View>
+                      <TouchableOpacity
+                        onPress={() => toggleSubcategory(item.id)}
+                        style={[
+                          styles.subcategoryButton,
+                          selectedSubStoreType == item.id &&
+                            styles.selectedSubcategoryButton,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.categoryName,
+                            selectedSubStoreType == item.id &&
+                              styles.selectedCategoryName,
+                          ]}
+                        >
+                          {item.name}
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                  contentContainerStyle={styles.flatListContainer}
+                />
+              </View>
               <TouchableOpacity
                 style={styles.closeButton}
                 onPress={() => setModalVisible(false)}
@@ -591,20 +585,19 @@ const PlaceCerateScreen: React.FC = () => {
         </Modal>
       </View>
       {/* 선택된 메뉴를 다음 줄에 표시 */}
-    
-       <View style={styles.selectedContainer}>
-       <Text style={styles.selectedTitle}>선택된 서브카테고리:</Text>
-       {selectedSubcategoryData.length > 0 ? (
-         selectedSubcategoryData.map((item) => (
-           <Text key={item.id} style={styles.selectedItem}>
-             {item.name}
-           </Text>
-         ))
-       ) : (
-         <Text style={styles.noSelection}>선택된 항목이 없습니다.</Text>
-       )}
-     </View>
-   
+
+      <View style={styles.selectedContainer}>
+        <Text style={styles.selectedTitle}>선택된 서브카테고리:</Text>
+        {selectedSubcategoryData.length > 0 ? (
+          selectedSubcategoryData.map((item) => (
+            <Text key={item.id} style={styles.selectedItem}>
+              {item.name}
+            </Text>
+          ))
+        ) : (
+          <Text style={styles.noSelection}>선택된 항목이 없습니다.</Text>
+        )}
+      </View>
 
       <Text style={styles.title}>태그 입력 (최대 10개 {tags.length}/10)</Text>
 
@@ -651,22 +644,38 @@ const PlaceCerateScreen: React.FC = () => {
       </View>
 
       <Text style={styles.title}>사진 </Text>
-      <TouchableOpacity style={styles.imageButton} onPress={()=>pickImage()}>
+      <TouchableOpacity style={styles.imageButton} onPress={() => pickImage()}>
         <Text style={styles.imageButtonText}>사진 추가하기</Text>
       </TouchableOpacity>
-      {image && <Image source={{ uri: image }} style={styles.image} />}
+      <Text style={styles.subtitle}>선택된 이미지</Text>
+      <ScrollView horizontal style={styles.imageScroll}>
+        {selectedImages.map((uri, index) => (
+          <Image key={index} source={{ uri }} style={styles.image} />
+        ))}
+      </ScrollView>
+
+      <Button title="이미지 업로드" onPress={uploadImagesToS3} />
+      {uploadedImageUrls.map((url, index) => (
+        <TouchableOpacity key={index} onPress={() => Alert.alert(url)}>
+          <ScrollView horizontal style={styles.imageScroll}>
+            <Image key={index} source={{ uri: url }} style={styles.image} />
+          </ScrollView>
+        </TouchableOpacity>
+      ))}
       {/* 입력 영역 */}
       <Text style={styles.title}>코멘트 </Text>
       <TextInput
         style={styles.textInput}
         multiline
-        placeholder="Type your text here"
-        value={inputText}
-        onChangeText={setInputText}
+        placeholder="추가 정보를 입력해주세요"
+        value={inputCommentText}
+        onChangeText={setInputCommentText}
         placeholderTextColor="#aaa"
       />
-
-      <TouchableOpacity style={styles.registerButton} onPress={()=>updatePlace()}>
+      <TouchableOpacity
+        style={styles.registerButton}
+        onPress={() => updatePlace()}
+      >
         <Text style={styles.registerButtonText}>가게 등록하기</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -692,6 +701,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 10,
   },
+  saveButton: {
+    backgroundColor: "#4CAF50",
+    padding: 15,
+    alignItems: "center",
+    borderRadius: 10,
+  },
+  saveButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
   dayText: {
     fontSize: 16,
     color: "#333",
@@ -716,9 +736,13 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   mapContainer: {
+    flex: 1,
     width: "100%",
-    height: 100,
-    backgroundColor: "green",
+    height: 200,
+  },
+  map: {
+    width: "100%",
+    height: "100%",
   },
   locationContainer: {
     flexDirection: "row", // 가로 방향 정렬
@@ -786,40 +810,39 @@ const styles = StyleSheet.create({
   },
   modalContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // 모달 배경
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // 모달 배경
   },
   modalContent: {
     backgroundColor: "white",
     borderRadius: 10,
-   padding:10,
+    padding: 10,
     width: "100%",
     height: "70%", // 고정된 높이 설정
     alignItems: "center",
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   flatListContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     paddingVertical: 10, // 아이템 상하 여백
   },
   categoryItem: {
     flex: 1, // 열 안에서 균등한 크기
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     margin: 5, // 아이템 간격
-    
   },
   categoryImage: {
     width: 60, // 이미지 크기
     height: 60,
     borderRadius: 30, // 둥근 이미지
-    backgroundColor: '#d3d3d3', // 임시 배경색
+    backgroundColor: "#d3d3d3", // 임시 배경색
   },
   subcategoryButton: {
     padding: 10,
@@ -842,21 +865,19 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     marginTop: 20,
-    backgroundColor: '#f5a9a9',
+    backgroundColor: "#f5a9a9",
     borderRadius: 10,
     padding: 10,
-    alignItems: 'center',
-    width: '80%',
+    alignItems: "center",
+    width: "80%",
   },
   closeButtonText: {
-    color: 'white',
+    color: "white",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
- 
-  selectedContainer: {
- 
-  },
+
+  selectedContainer: {},
   selectedTitle: {
     fontSize: 16,
     fontWeight: "bold",
@@ -872,7 +893,6 @@ const styles = StyleSheet.create({
     color: "#999",
   },
 
-
   menuItem: {
     padding: 15,
     borderBottomWidth: 1,
@@ -882,7 +902,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#333",
   },
- 
+
   tagInputContainer: {
     flexDirection: "row", // 입력 필드와 버튼을 같은 줄에 배치
     alignItems: "center",
@@ -952,6 +972,16 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
+  },
+  subtitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  imageScroll: {
+    flexDirection: "row",
+    marginBottom: 20,
   },
   registerButton: {
     backgroundColor: "#ff6f61",

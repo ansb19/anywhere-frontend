@@ -13,7 +13,7 @@ import {
 import * as Location from 'expo-location'
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { NaverMapView } from '@mj-studio/react-native-naver-map';
+
 import { examplePlaces } from '@/types/place';
 
 
