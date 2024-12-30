@@ -1,7 +1,5 @@
-import { Place } from "@/types/place";
+import { examplePlaces, Place } from "@/types/place";
 import { createSlice } from "@reduxjs/toolkit";
-
-
 
 interface PlaceState {
   places: Place[];
@@ -9,7 +7,7 @@ interface PlaceState {
 }
 
 const initialState: PlaceState = {
-  places: [],
+  places: examplePlaces,
   createPlace: null,
 };
 
@@ -18,10 +16,21 @@ const placeSlice = createSlice({
   initialState,
   reducers: {
     addPlaces(state, action) {
-      state.places.push(action.payload);
+      const index = state.places.findIndex(
+        (place) => place.place_id === action.payload.place_id
+      );
+      if (index !== -1) {
+        // 같은 place_id가 있으면 기존 데이터 덮어쓰기
+        state.places[index] = action.payload;
+      } else {
+        // 같은 place_id가 없으면 새로 추가
+        state.places.push(action.payload);
+      }
     },
     removePlaces(state, action) {
-      state.places = state.places.filter((place) => place.place_name !== action.payload);
+      state.places = state.places.filter(
+        (place) => place.place_name !== action.payload
+      );
     },
   },
 });

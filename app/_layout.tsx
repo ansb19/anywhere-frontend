@@ -9,11 +9,10 @@ import { store } from "../store";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useAppSelector } from "@/store/hooks";
 import { SafeAreaView } from "react-native";
-import { Buffer } from "buffer";
+import React from "react";
 
-if (!global.Buffer) {
-  global.Buffer = Buffer; // Buffer를 전역 객체로 설정
-}
+
+
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 

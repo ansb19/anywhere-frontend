@@ -7,6 +7,10 @@ export const store = configureStore({
     auth: authReducer,
     place: placeReducer,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 });
 
 // 타입 설정

@@ -48,7 +48,7 @@ const LoginScreen = () => {
 
 const handleKakaoLogin = async () => {
   try {
-      const response = await axiosInstance.get<{ data: string }>('http://52.78.42.88/auth/kakao/url');
+      const response = await axiosInstance.post<{ data: string }>('http://52.78.42.88/user/signup/kakao/url');
       const kakaoLoginUrl = response.data.data;
       console.log(kakaoLoginUrl)
 
@@ -65,10 +65,10 @@ const handleKakaoLogin = async () => {
 };
 
 const handleKakaoLogout = async () => {
-  console.log(`${requests.logout}/user_id/1/type/kakao`);
+  console.log(`${requests.logout}/user_id/18/user_type/kakao`);
   try {
       const response = await axiosInstance.delete(
-        `${requests.logout}/user_id/1/type/kakao`
+        `${requests.logout}/user_id/18/user_type/kakao`
     );
       const kakaoLoginUrl = response.data;
       console.log(kakaoLoginUrl)

@@ -6,91 +6,113 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-  TextInput,
 } from "react-native";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 
-import { useRouter, useLocalSearchParams } from "expo-router";
+import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
-import { examplePlaces, Place } from "@/types/place";
+import { useAppSelector } from "@/store/hooks";
+import { Place } from "@/types/place";
+import MapView, { Marker } from "react-native-maps";
 
 export default function PlaceDetailScreen() {
   const router = useRouter();
   const navigation = useNavigation();
-  const local = useLocalSearchParams().id;
+  const local = useLocalSearchParams().id; // URL에서 id 가져오기
+  const places = useAppSelector((state) => state.place.places); // 상태에서 places 가져오기
 
-  useEffect(() => {
-    navigation.setOptions({
-      headerShown: false,
-    });
-    console.log(local);
-  }, [navigation, local]);
+  const [selectedExamplePlace, setSelectedExamplePlace] = useState<Place | null>(
+    null
+  );
+  const [region, setRegion] = useState<{
+    latitude: number;
+    longitude: number;
+    latitudeDelta: number;
+    longitudeDelta: number;
+  } | null>(null);
+  const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가
 
-  const getIdAsNumber = (id: string | string[] | undefined): number => {
-    if (typeof id === "string") {
-      return parseInt(id, 10); // 문자열이면 숫자로 변환
-    } else if (Array.isArray(id)) {
-      return parseInt(id[0], 10); // 배열이면 첫 번째 요소를 숫자로 변환
-    } else {
-      throw new Error("Invalid id value"); // id가 없거나 올바르지 않을 때 예외 처리
-    }
-  };
+  // 화면이 포커스될 때마다 실행
+  useFocusEffect(
+    React.useCallback(() => {
+      setIsLoading(true);
 
-  const id = getIdAsNumber(local); // 숫자로 변환된 id
+      // id를 숫자로 변환하고, places에서 해당 데이터를 가져오기
+      const id = typeof local === "string" ? parseInt(local, 10) : null;
+      const selectedPlace = places.find((place) => place.place_id === id);
 
-  const [selectedExamplePlace, setSelectedExamplePlace] = useState<Place>(
-    examplePlaces[id]
+      if (selectedPlace) {
+        setSelectedExamplePlace(selectedPlace);
+
+        // 선택된 장소에 따라 region 업데이트
+        setRegion({
+          latitude: selectedPlace.lat,
+          longitude: selectedPlace.lon,
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        });
+      } else {
+        console.error("Place not found for id:", local);
+      }
+
+      setIsLoading(false); // 로딩 상태 해제
+    }, [local, places])
   );
 
-  const images = [
-    "https://via.placeholder.com/150",
-    "https://via.placeholder.com/150",
-    "https://via.placeholder.com/150",
-    "https://via.placeholder.com/150",
-    "https://via.placeholder.com/150",
-    "https://via.placeholder.com/150",
-    "https://via.placeholder.com/150",
-    "https://via.placeholder.com/150",
-    "https://via.placeholder.com/150",
-    "https://via.placeholder.com/150",
-  ];
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.loadingText}>로딩 중...</Text>
+      </View>
+    );
+  }
+  if (!selectedExamplePlace) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.errorText}>가게 정보를 찾을 수 없습니다.</Text>
+        <TouchableOpacity onPress={() => router.back()} style={styles.retryButton}>
+          <Text style={styles.retryButtonText}>뒤로 가기</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
       {/* Header Section */}
       <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          style={styles.backButton}
-        >
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <FontAwesome name="arrow-left" size={24} color="black" />
         </TouchableOpacity>
-       
+
         <View style={styles.card}>
           <Image
-            source={{ uri: "https://cdn-icons-png.flaticon.com/512/512/512870.png" }}
+            source={{
+              uri: "https://cdn-icons-png.flaticon.com/512/512/512870.png",
+            }}
             style={styles.icon}
           />
           <View style={styles.content}>
-            <Text style={styles.title}>황금잉어빵</Text>
-            <Text style={styles.title}>황금잉어빵</Text>
-         
+            <Text style={styles.title}>{selectedExamplePlace.place_name}</Text>
             <View style={styles.meta}>
-            <Text style={styles.subtitle}>최근 한달 0명이 방문 성공</Text>
-            <Text style={styles.metaText}>0개 <MaterialIcons name="favorite" size={12} color="gray" /> 245m</Text>
-          
-           
+              <Text style={styles.subtitle}>
+                최근 한달 {selectedExamplePlace.exist_count}명이 방문 성공
+              </Text>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <Text style={styles.metaText}>
+                  {selectedExamplePlace.exist_count}명
+                </Text>
+                <MaterialIcons name="favorite" size={12} color="gray" />
+                <Text style={styles.metaText}>245m</Text>
+              </View>
+            </View>
           </View>
-          </View>
-         
         </View>
       </View>
 
+      {/* Comment Section */}
       <View style={styles.commentContainer}>
-        <Text style={styles.commentText}>
-          {selectedExamplePlace.comment}
-          dsadsalk;fasdl'jk;fsdgaljk;fsdgal'jk;fsdjkl';fdasljk;fsdlnjk;hfdsaljk;fdasljk;fasdlhjk;fasdljk;fdaslhjk;fdaslhjk;fsdalhjk;fasdlhjkfasdlhjkfasdlhjkfsdalhjkfasdlhjkfasdlhjkfasdlhjkfdaslhjkfdaslhjkfdaslhjkfasdhjlkfasdlhjkfasdlhjkfsdalhjkfasdlhjkfsdalhjkfsdglfasdljk;fasdlhjk;fasdljk;fsdljk;fasdjkl;fasdljk;fsdaljk;fsdaljk;fasdljk;fsdaljk;fasdljk;fasdljk;fdasljk;fsdaljk;fasdljk;fsdaljk;
-        </Text>
+        <Text style={styles.commentText}>{selectedExamplePlace.comment}</Text>
       </View>
 
       {/* Icon Buttons */}
@@ -109,52 +131,53 @@ export default function PlaceDetailScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Map Section */}
-      {/* <View style={styles.mapContainer}>
-        <MapView
-          style={styles.map}
-          initialRegion={{
-            latitude: 35.166,
-            longitude: 129.072,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01,
-          }}
-        >
-          <Marker coordinate={{ latitude: 35.166, longitude: 129.072 }} />
-        </MapView>
-        <Text style={styles.address}>부산광역시 금정구 부곡동 277-3</Text>
-      </View> */}
+   {/* Map Section */}
+<View style={styles.mapContainer}>
+  {region ? (
+    <MapView
+      style={styles.map}
+      region={region}
+      scrollEnabled={false} // 맵 스크롤 비활성화
+      zoomEnabled={false} // 줌 비활성화
+      rotateEnabled={false} // 회전 비활성화
+      pitchEnabled={false} // 3D 피치 비활성화
+    >
+      <Marker
+        coordinate={{
+          latitude: region.latitude,
+          longitude: region.longitude,
+        }}
+        title={selectedExamplePlace.place_name}
+        description={selectedExamplePlace.comment}
+      />
+    </MapView>
+  ) : (
+    <Text style={styles.loadingText}>지도를 로드 중입니다...</Text>
+  )}
+</View>
+
 
       {/* Photo Carousel */}
-      {/* <ScrollView horizontal style={styles.carousel}>
+      <ScrollView horizontal style={styles.carousel}>
         {[...Array(5)].map((_, index) => (
           <Image
-            
-            source={{ uri: 'https://via.placeholder.com/150' }}
+            key={index}
+            source={{ uri: "https://via.placeholder.com/150" }}
             style={styles.photo}
           />
         ))}
-      </ScrollView> */}
+      </ScrollView>
 
-      <View style={styles.imageContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {images.map((image, index) => (
-            <Image key={index} source={{ uri: image }} style={styles.image} />
-          ))}
-        </ScrollView>
-      </View>
       {/* Visit Info */}
       <View style={styles.visitInfo}>
         <Text style={styles.visitText}>아직 방문 인증 내역이 없어요 :(</Text>
         <View style={styles.visitCounts}>
           <View style={styles.successContainer}>
-            {" "}
             <Text style={styles.success}>
               방문 성공 {selectedExamplePlace.exist_count}명
             </Text>
           </View>
           <View style={styles.failureContainer}>
-            {" "}
             <Text style={styles.failure}>
               방문 실패 {selectedExamplePlace.non_exist_count}명
             </Text>
@@ -177,7 +200,6 @@ export default function PlaceDetailScreen() {
     </ScrollView>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -192,7 +214,7 @@ const styles = StyleSheet.create({
     marginRight: 16, // 버튼과 다른 요소 간 간격
   },
   card: {
-    flex:1,
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     padding: 10,
@@ -220,14 +242,14 @@ const styles = StyleSheet.create({
   },
   meta: {
     flexDirection: "row",
-    justifyContent:"space-between",
-    alignItems: "center"
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   metaText: {
     fontSize: 12,
     color: "gray",
     marginLeft: 5,
-    textAlign:"center"
+    textAlign: "center",
   },
   commentContainer: {
     padding: 16,
@@ -267,6 +289,11 @@ const styles = StyleSheet.create({
   },
   map: {
     flex: 1,
+  },
+  loadingText: {
+    textAlign: "center",
+    marginTop: 20,
+    color: "#aaa",
   },
   address: {
     marginTop: 10,
@@ -366,5 +393,16 @@ const styles = StyleSheet.create({
   errorText: {
     fontSize: 18,
     color: "red",
+  },
+  retryButton: {
+    marginTop: 20,
+    padding: 10,
+    backgroundColor: "#ddd",
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  retryButtonText: {
+    color: "#333",
+    fontWeight: "bold",
   },
 });

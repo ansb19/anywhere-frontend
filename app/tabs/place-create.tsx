@@ -15,7 +15,7 @@ import {
   Image,
 } from "react-native";
 import { useRouter } from "expo-router";
-import { useAppSelector } from "@/store/hooks";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import DateTimePicker, {
   DateTimePickerEvent,
 } from "@react-native-community/datetimepicker";
@@ -34,8 +34,10 @@ import s3Client from "@/aws/client";
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 import AWS from "aws-sdk";
-import MapScreen from "../map/map";
+import MapScreen from "../../components/map/map";
 import MapView, { Marker } from "react-native-maps";
+import { createPlace } from "@/services/placeService";
+import { addPlaces } from "@/store/slices/placeSlice";
 
 AWS.config.update({
   region: process.env.EXPO_PUBLIC_AWS_S3_AWS_REGION || "", // AWS 리전
@@ -69,8 +71,10 @@ console.log(SCREEN_WIDTH);
 // }
 const PlaceCerateScreen: React.FC = () => {
   const router = useRouter();
-
+  const dispatch = useAppDispatch(); // Redux dispatch 함수
+  const places = useAppSelector((state) => state.place.places); // 상태에서 places 가져오기
   const user = useAppSelector((state) => state.auth.user);
+
   const [place, setPlace] = useState<Place>(placeData);
 
   const [selectedPaymentMethods, setSelectedPaymentMethods] = useState<
@@ -106,10 +110,13 @@ const PlaceCerateScreen: React.FC = () => {
   const [longitude, setLongitude] = useState<number>(126.978); // 초기 경도 설정 (서울)
 
   const [selectedDays, setSelectedDays] = useState<string[]>(["월"]);
-  const updatePlace = () => {
+  const updatePlace = async () => {
     const newAddPlace: Place = {
       ...place,
+    
       user_id: user!.user_id,
+      lat: latitude,
+      lon: longitude,
       place_name: placeInputText,
       category_id: selectedStoreType,
       subcategory_id: selectedSubStoreType,
@@ -122,6 +129,17 @@ const PlaceCerateScreen: React.FC = () => {
       tag: tags,
       owner: selectedOwnerTypes,
     };
+    // State 업데이트 로직
+  
+    dispatch(addPlaces(newAddPlace));
+  
+    try {
+      const response = await createPlace(newAddPlace);
+
+      console.log("응답 데이터:", response.data);
+    } catch (error) {
+      console.error("데이터 전송 실패:", error);
+    }
 
     console.log("Updated Place:", newAddPlace);
   };
@@ -267,21 +285,8 @@ const PlaceCerateScreen: React.FC = () => {
       }
       // 새로운 항목 추가
       return [...prev, day];
+      0;
     });
-  };
-  const createPlace = async () => {
-    console.log(process.env.EXPO_PUBLIC_BACKEND_LOCAL);
-    try {
-      const response = await axiosInstance.post(requests.placeCreate, place, {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      console.log("응답 데이터:", response.data);
-    } catch (error) {
-      console.error("데이터 전송 실패:", error);
-    }
   };
 
   const combineDateAndTime = (date: Date, time: Date): Date => {
@@ -340,7 +345,6 @@ const PlaceCerateScreen: React.FC = () => {
       {/* TODO 지도  부분 만들어야함*/}
       <Text style={styles.title}>지도*</Text>
 
-  
       <Text style={styles.title}>가게 위치 선택</Text>
       <View style={styles.mapContainer}>
         <MapScreen onLocationSelect={handleLocationSelect} />
