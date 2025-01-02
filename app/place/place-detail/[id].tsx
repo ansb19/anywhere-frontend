@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Share,
 } from "react-native";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 
@@ -14,16 +15,47 @@ import { useNavigation } from "@react-navigation/native";
 import { useAppSelector } from "@/store/hooks";
 import { Place } from "@/types/place";
 import MapView, { Marker } from "react-native-maps";
-
+import { captureRef } from "react-native-view-shot";
+import * as MediaLibrary from "expo-media-library";
 export default function PlaceDetailScreen() {
+  const imageRef = useRef<View>(null);
   const router = useRouter();
   const navigation = useNavigation();
   const local = useLocalSearchParams().id; // URL에서 id 가져오기
   const places = useAppSelector((state) => state.place.places); // 상태에서 places 가져오기
 
-  const [selectedExamplePlace, setSelectedExamplePlace] = useState<Place | null>(
-    null
-  );
+  const [selectedExamplePlace, setSelectedExamplePlace] =
+    useState<Place | null>(null);
+  const [status, requestPermission] = MediaLibrary.usePermissions();
+  // 공유 함수
+  const sharePlace = async () => {
+    try {
+      if (!imageRef.current) {
+        console.error("View가 렌더링되지 않았습니다.");
+        return;
+      }
+      if (!status?.granted) {
+        await requestPermission();
+      }
+      // View를 캡처하여 URI 생성
+      const uri = await captureRef(imageRef, {
+        format: "jpg",
+        quality: 1,
+      });
+      await MediaLibrary.saveToLibraryAsync(uri);
+      const message = `${
+        selectedExamplePlace!.place_name
+      }에 대해 확인해보세요! \nAnyWhere앱에서 확인해보세요요`;
+      // 공유 기능 실행
+      await Share.share({
+        url: uri,
+        message,
+        title: `${selectedExamplePlace!.place_name}에 대한 정보`,
+      });
+    } catch (error) {
+      console.error("이미지 공유 중 오류 발생:", error);
+    }
+  };
   const [region, setRegion] = useState<{
     latitude: number;
     longitude: number;
@@ -70,7 +102,10 @@ export default function PlaceDetailScreen() {
     return (
       <View style={styles.container}>
         <Text style={styles.errorText}>가게 정보를 찾을 수 없습니다.</Text>
-        <TouchableOpacity onPress={() => router.back()} style={styles.retryButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.retryButton}
+        >
           <Text style={styles.retryButtonText}>뒤로 가기</Text>
         </TouchableOpacity>
       </View>
@@ -79,123 +114,134 @@ export default function PlaceDetailScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      {/* Header Section */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <FontAwesome name="arrow-left" size={24} color="black" />
-        </TouchableOpacity>
+      <View ref={imageRef} style={styles.container}>
+        {/* Header Section */}
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <FontAwesome name="arrow-left" size={24} color="black" />
+          </TouchableOpacity>
 
-        <View style={styles.card}>
-          <Image
-            source={{
-              uri: "https://cdn-icons-png.flaticon.com/512/512/512870.png",
-            }}
-            style={styles.icon}
-          />
-          <View style={styles.content}>
-            <Text style={styles.title}>{selectedExamplePlace.place_name}</Text>
-            <View style={styles.meta}>
-              <Text style={styles.subtitle}>
-                최근 한달 {selectedExamplePlace.exist_count}명이 방문 성공
+          <View style={styles.card}>
+            <Image
+              source={{
+                uri: "https://cdn-icons-png.flaticon.com/512/512/512870.png",
+              }}
+              style={styles.icon}
+            />
+            <View style={styles.content}>
+              <Text style={styles.title}>
+                {selectedExamplePlace.place_name}
               </Text>
-              <View style={{ flexDirection: "row", alignItems: "center" }}>
-                <Text style={styles.metaText}>
-                  {selectedExamplePlace.exist_count}명
+              <View style={styles.meta}>
+                <Text style={styles.subtitle}>
+                  최근 한달 {selectedExamplePlace.exist_count}명이 방문 성공
                 </Text>
-                <MaterialIcons name="favorite" size={12} color="gray" />
-                <Text style={styles.metaText}>245m</Text>
+                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                  <Text style={styles.metaText}>
+                    {selectedExamplePlace.exist_count}명
+                  </Text>
+                  <MaterialIcons name="favorite" size={12} color="gray" />
+                  <Text style={styles.metaText}>245m</Text>
+                </View>
               </View>
             </View>
           </View>
         </View>
-      </View>
 
-      {/* Comment Section */}
-      <View style={styles.commentContainer}>
-        <Text style={styles.commentText}>{selectedExamplePlace.comment}</Text>
-      </View>
-
-      {/* Icon Buttons */}
-      <View style={styles.iconRow}>
-        <TouchableOpacity style={styles.iconButton}>
-          <FontAwesome name="share-alt" size={24} color="black" />
-          <Text style={styles.iconText}>공유하기</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
-          <FontAwesome name="map-marker" size={24} color="black" />
-          <Text style={styles.iconText}>길 안내</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.iconButton}>
-          <FontAwesome name="pencil" size={24} color="black" />
-          <Text style={styles.iconText}>리뷰 쓰기</Text>
-        </TouchableOpacity>
-      </View>
-
-   {/* Map Section */}
-<View style={styles.mapContainer}>
-  {region ? (
-    <MapView
-      style={styles.map}
-      region={region}
-      scrollEnabled={false} // 맵 스크롤 비활성화
-      zoomEnabled={false} // 줌 비활성화
-      rotateEnabled={false} // 회전 비활성화
-      pitchEnabled={false} // 3D 피치 비활성화
-    >
-      <Marker
-        coordinate={{
-          latitude: region.latitude,
-          longitude: region.longitude,
-        }}
-        title={selectedExamplePlace.place_name}
-        description={selectedExamplePlace.comment}
-      />
-    </MapView>
-  ) : (
-    <Text style={styles.loadingText}>지도를 로드 중입니다...</Text>
-  )}
-</View>
-
-
-      {/* Photo Carousel */}
-      <ScrollView horizontal style={styles.carousel}>
-        {[...Array(5)].map((_, index) => (
-          <Image
-            key={index}
-            source={{ uri: "https://via.placeholder.com/150" }}
-            style={styles.photo}
-          />
-        ))}
-      </ScrollView>
-
-      {/* Visit Info */}
-      <View style={styles.visitInfo}>
-        <Text style={styles.visitText}>아직 방문 인증 내역이 없어요 :(</Text>
-        <View style={styles.visitCounts}>
-          <View style={styles.successContainer}>
-            <Text style={styles.success}>
-              방문 성공 {selectedExamplePlace.exist_count}명
-            </Text>
-          </View>
-          <View style={styles.failureContainer}>
-            <Text style={styles.failure}>
-              방문 실패 {selectedExamplePlace.non_exist_count}명
-            </Text>
-          </View>
+        {/* Comment Section */}
+        <View style={styles.commentContainer}>
+          <Text style={styles.commentText}>{selectedExamplePlace.comment}</Text>
         </View>
-        <Text style={styles.prompt}>
-          방문 인증으로 가게의 최근 활동을 알려주세요!
-        </Text>
-      </View>
 
-      {/* Footer Buttons */}
-      <View style={styles.footerButtons}>
-        <TouchableOpacity style={styles.favoriteButton}>
-          <Text style={styles.buttonText}>즐겨찾기</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.verifyButton}>
-          <Text style={styles.buttonText}>방문 인증하기</Text>
-        </TouchableOpacity>
+        {/* Icon Buttons */}
+        <View style={styles.iconRow}>
+          <TouchableOpacity style={styles.iconButton} onPress={sharePlace}>
+            <FontAwesome name="share-alt" size={24} color="black" />
+            <Text style={styles.iconText}>공유하기</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.iconButton}>
+            <FontAwesome name="map-marker" size={24} color="black" />
+            <Text style={styles.iconText}>길 안내</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() =>
+              router.push(`../place-review/${selectedExamplePlace.place_name}`)
+            }
+          >
+            <FontAwesome name="pencil" size={24} color="black" />
+            <Text style={styles.iconText}>리뷰 쓰기</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Map Section */}
+        <View style={styles.mapContainer}>
+          {region ? (
+            <MapView
+              style={styles.map}
+              region={region}
+              scrollEnabled={false} // 맵 스크롤 비활성화
+              zoomEnabled={false} // 줌 비활성화
+              rotateEnabled={false} // 회전 비활성화
+              pitchEnabled={false} // 3D 피치 비활성화
+            >
+              <Marker
+                coordinate={{
+                  latitude: region.latitude,
+                  longitude: region.longitude,
+                }}
+                title={selectedExamplePlace.place_name}
+                description={selectedExamplePlace.comment}
+              />
+            </MapView>
+          ) : (
+            <Text style={styles.loadingText}>지도를 로드 중입니다...</Text>
+          )}
+        </View>
+
+        {/* Photo Carousel */}
+        <ScrollView horizontal style={styles.carousel}>
+          {[...Array(5)].map((_, index) => (
+            <Image
+              key={index}
+              source={{ uri: "https://via.placeholder.com/150" }}
+              style={styles.photo}
+            />
+          ))}
+        </ScrollView>
+
+        {/* Visit Info */}
+        <View style={styles.visitInfo}>
+          <Text style={styles.visitText}>아직 방문 인증 내역이 없어요 :(</Text>
+          <View style={styles.visitCounts}>
+            <View style={styles.successContainer}>
+              <Text style={styles.success}>
+                방문 성공 {selectedExamplePlace.exist_count}명
+              </Text>
+            </View>
+            <View style={styles.failureContainer}>
+              <Text style={styles.failure}>
+                방문 실패 {selectedExamplePlace.non_exist_count}명
+              </Text>
+            </View>
+          </View>
+          <Text style={styles.prompt}>
+            방문 인증으로 가게의 최근 활동을 알려주세요!
+          </Text>
+        </View>
+
+        {/* Footer Buttons */}
+        <View style={styles.footerButtons}>
+          <TouchableOpacity style={styles.favoriteButton}>
+            <Text style={styles.buttonText}>즐겨찾기</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.verifyButton}>
+            <Text style={styles.buttonText}>방문 인증하기</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </ScrollView>
   );

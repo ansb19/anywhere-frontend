@@ -61,7 +61,9 @@
     "react-native-web": "~0.19.13",
     "react-native-webview": "13.12.5",
     "react-redux": "^9.1.2",
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.3",
+    "react-native-view-shot": "~4.0.3",
+    "expo-media-library": "~17.0.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

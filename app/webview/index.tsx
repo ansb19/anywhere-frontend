@@ -24,23 +24,23 @@ const WebViewScreen = () => {
             console.log('WebView에서 받은 메시지:', messageData);
 
             // Redux 상태에 사용자 데이터 저장
-            // dispatch(
-            //     login({
-            //         user_id: messageData.data.user.id,
-            //         account_email: messageData.data.user.email,
-            //         nickname: messageData.data.user.nickname,
-            //         phone_number: messageData.data.user.phone,
-            //         register_place_count: 0, // 기본값 설정, 필요시 수정
-            //         penalty_count: messageData.data.user.penalty_count,
-            //         penalty_state: messageData.data.user.penalty_state,
-            //     })
-            // );
+            dispatch(
+                login({
+                    user_id: messageData.data.user.id,
+                    account_email: messageData.data.user.email,
+                    nickname: messageData.data.user.nickname,
+                    phone_number: messageData.data.user.phone,
+                    register_place_count: 0, // 기본값 설정, 필요시 수정
+                    penalty_count: messageData.data.user.penalty_count,
+                    penalty_state: messageData.data.user.penalty_state,
+                })
+            );
 
             // 닉네임 페이지로 리다이렉트
-            // router.replace('./auth/nickname');
+            router.replace('./auth/nickname');
         } catch (error) {
             console.error('WebView 메시지 처리 오류:', error);
-            router.replace('/+not-found'); // 오류 발생 시 에러 페이지로 이동
+            router.replace('/auth/login'); // 오류 발생 시 에러 페이지로 이동
         }
           // 로그인 성공 시
         }

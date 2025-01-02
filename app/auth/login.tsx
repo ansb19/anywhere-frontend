@@ -15,6 +15,8 @@ const LoginScreen = () => {
 
   // Redux 상태 가져오기
   const isAuthenticated = useAppSelector((state) => state.auth.isAuthenticated);
+  const user = useAppSelector((state) => state.auth.user);
+
 
   // 임의의 이메일 검증 함수
   const validateEmail = (email: string) => {
@@ -68,7 +70,7 @@ const handleKakaoLogout = async () => {
   console.log(`${requests.logout}/user_id/18/user_type/kakao`);
   try {
       const response = await axiosInstance.delete(
-        `${requests.logout}/user_id/18/user_type/kakao`
+        `${requests.logout}/user_id/${user!.user_id}/user_type/kakao`
     );
       const kakaoLoginUrl = response.data;
       console.log(kakaoLoginUrl)
