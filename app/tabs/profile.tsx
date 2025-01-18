@@ -20,6 +20,10 @@ import { useRouter } from "expo-router";
 import { User } from "@/types/user";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { logout } from "@/store/slices/authSlice";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import requests from "@/api/request";
+import axiosInstance from "@/api/axiosInstance";
+import axios from "axios";
 const shopData = [
   { title: '황금잉어빵', subtitle: '양산시 물금읍 아아아아아아아아 40', distance: '0개 | 245m', id: 1 },
   { title: '달콤카페', subtitle: '양산시 물금읍 아아아아아아아아 40', distance: '3개 | 320m', id: 2 },
@@ -44,8 +48,44 @@ export default function ProfileScreen() {
   const dispatch = useAppDispatch();
 
 
-  const handleLogin = () => {
+  const handleLogout = async() => {
     dispatch(logout()); // 로그인 상태 업데이트
+
+    await AsyncStorage.removeItem('accessToken');
+      await AsyncStorage.removeItem('userInfo');
+   
+  };
+  const handleDelete = async() => {
+    dispatch(logout()); // 로그인 상태 업데이트
+
+    await AsyncStorage.removeItem('accessToken');
+      await AsyncStorage.removeItem('userInfo');
+      console.log(`${requests.logout(1,'kakao')}`);
+      try {
+        const response = await axiosInstance.delete(`${requests.logout(user!.user_id,"kakao")}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'MyApp/1.0.0', // User-Agent 설정
+          },
+          withCredentials: true, // 쿠키 및 인증 정보 포함 (필요 시)
+        });
+    
+        // 요청 성공 시 처리
+      
+        Alert.alert('성공', '카카오 로그아웃 완료 했습니다.');
+        console.log(`User successfully withdrawn: ${JSON.stringify(response.data)}`);
+      } catch (err) {
+        // 에러 핸들링
+        if (axios.isAxiosError(err) && err.response) {
+          const errorMessage = JSON.stringify(err.response.data); 
+          Alert.alert('성공', '카카오 로그아웃 요청 실패 했습니다.');
+          console.error(`Error: ${errorMessage}`);
+        } else {
+          const errorMessage = (err as Error).message;
+          Alert.alert('오류', '카카오 로그아웃웃 요청 중 문제가 발생했습니다.');
+          console.error(`Request failed: ${errorMessage}`);
+        }
+      }
    
   };
   // 이메일 마스킹 처리 함수
@@ -101,8 +141,14 @@ export default function ProfileScreen() {
           </View>
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>로그아웃</Text>
-            <TouchableOpacity     style={styles.visitButton} onPress={() =>handleLogin()}>
+            <TouchableOpacity     style={styles.visitButton} onPress={() =>handleLogout()}>
               <Text style={styles.visitButtonText}>로그아웃</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.infoRow}>
+            <Text style={styles.infoLabel}>회원탈퇴</Text>
+            <TouchableOpacity     style={styles.visitButton} onPress={() =>handleDelete()}>
+              <Text style={styles.visitButtonText}>회원탈퇴</Text>
             </TouchableOpacity>
           </View>
       

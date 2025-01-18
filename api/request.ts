@@ -5,7 +5,8 @@ export const requests = {
    getUserCreate: "/user/find/nickname",
    userUpdate: (userId: string | number) => `/user/manage/id/${userId}`,
    placeCreate: "/place",
-   logout :"/user/withdraw"
+   logout: (userId: number, userType: string) =>
+      `/user/withdraw/user_id/${userId}/user_type/${userType}`,
 }
 
 export default requests;

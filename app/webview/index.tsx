@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useDispatch } from 'react-redux';
 import { login } from '@/store/slices/authSlice';
 import { WebView } from 'react-native-webview';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const WebViewScreen = () => {
     const { url } = useLocalSearchParams(); // URL 전달받기
     const router = useRouter();
@@ -12,7 +12,7 @@ const WebViewScreen = () => {
     const [showWebView, setShowWebView] = useState(false);
     const webViewRef = useRef<WebView>(null); // WebView 타입 명시
 
-    const handleWebViewMessage = (event: any) => {
+    const handleWebViewMessage =async (event: any) => {
         const exp = "code=";
         const searchIdx = event.nativeEvent.url.indexOf(exp);
         if (searchIdx !== -1) {
@@ -22,6 +22,7 @@ const WebViewScreen = () => {
             console.log('WebView에서 받은 메시지:', event.nativeEvent.data);
             const messageData = JSON.parse(event.nativeEvent.data);
             console.log('WebView에서 받은 메시지:', messageData);
+            if(messageData.data.user.id && messageData.data.user.email){
 
             // Redux 상태에 사용자 데이터 저장
             dispatch(
@@ -35,14 +36,36 @@ const WebViewScreen = () => {
                     penalty_state: messageData.data.user.penalty_state,
                 })
             );
+              // 토큰과 사용자 정보 저장
+    await AsyncStorage.setItem('accessToken', "aa");
+    await AsyncStorage.setItem('userInfo', JSON.stringify({
+        user_id: messageData.data.user.id,
+        account_email: messageData.data.user.email,
+        nickname: messageData.data.user.nickname,
+        phone_number: messageData.data.user.phone,
+        register_place_count: 0, // 기본값 설정, 필요시 수정
+        penalty_count: messageData.data.user.penalty_count,
+        penalty_state: messageData.data.user.penalty_state,
+    }));
 
             // 닉네임 페이지로 리다이렉트
             router.replace('./auth/nickname');
+        }else{
+        router.replace('./auth/login');
+        }
         } catch (error) {
             console.error('WebView 메시지 처리 오류:', error);
             router.replace('/auth/login'); // 오류 발생 시 에러 페이지로 이동
         }
           // 로그인 성공 시
+        }else{ 
+            console.log(event.nativeEvent.data)
+            if(event.nativeEvent.data == `{"message":"code 값이 필요"}`){
+                const messageData = JSON.parse(event.nativeEvent.data);
+                console.log(messageData.message)
+                if(messageData.message ==   "code 값이 필요")
+                { router.replace('./auth/login');}
+            }
         }
     };
 

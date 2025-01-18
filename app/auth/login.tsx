@@ -7,7 +7,7 @@ import axios from "axios";
 import * as Linking from 'expo-linking';
 import axiosInstance from "@/api/axiosInstance";
 import requests from "@/api/request";
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const LoginScreen = () => {
   const [email, setEmail] = useState("asw0899@aa.aa"); // 이메일 입력 상태
   const router = useRouter();
@@ -66,39 +66,44 @@ const handleKakaoLogin = async () => {
   }
 };
 
-const handleKakaoLogout = async () => {
-  console.log(`${requests.logout}/user_id/18/user_type/kakao`);
-  try {
-      const response = await axiosInstance.delete(
-        `${requests.logout}/user_id/${user!.user_id}/user_type/kakao`
-    );
-      const kakaoLoginUrl = response.data;
-      console.log(kakaoLoginUrl)
 
-   
+const checkAutoLogin = async () => {
+  try {
+    const token = await AsyncStorage.getItem('accessToken');
+    const userInfoString = await AsyncStorage.getItem('userInfo');
+
+    if (token && userInfoString) {
+      const userInfo = JSON.parse(userInfoString);
+
+      console.log('User is automatically logged in:', userInfo);
+
+      // Redux 상태에 로그인 정보 디스패치
+      dispatch(
+        login({
+          user_id: userInfo.user_id,
+          account_email: userInfo.account_email,
+          nickname: userInfo.nickname,
+          phone_number: userInfo.phone_number,
+          register_place_count: userInfo.register_place_count || 0, // 기본값 설정
+          penalty_count: userInfo.penalty_count || 0,
+          penalty_state: userInfo.penalty_state || false,
+        })
+      );
+      router.replace("/tabs");
+    } else {
+      console.log('No token found, user needs to log in');
+    }
   } catch (error) {
-      console.error('카카오 로그아웃 요청 오류:', error);
-      Alert.alert('오류', '카카오 로그인 요청 중 문제가 발생했습니다.');
+    console.error('Failed to check auto login:', error);
   }
 };
-const fetchSignupData = async (code: string): Promise<void> => {
-    try {
-        // 회원가입 데이터 확인 API 호출
-        const response = await axios.get(`http://52.78.42.88/user/signup/kakao`, {
-            params: { code },
-        });
 
-        if (response.data) {
-            Alert.alert('회원가입 성공', `안녕하세요, ${response.data.data.user.nickname}님!`);
-            console.log(response.data); // 필요한 데이터 활용
-        } else {
-            Alert.alert('오류', '회원가입 데이터를 가져오는 데 실패했습니다.');
-        }
-    } catch (error) {
-        console.error('회원가입 데이터 가져오기 오류:', error);
-        Alert.alert('오류', '회원가입 데이터를 가져오는 중 문제가 발생했습니다.');
-    }
-};
+
+
+useEffect(() => {
+  checkAutoLogin();
+}, []);
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
@@ -113,9 +118,8 @@ const fetchSignupData = async (code: string): Promise<void> => {
       <View style={styles.container}>
             <Button title="카카오로 로그인" onPress={handleKakaoLogin} />
         </View>
-        <View style={styles.container}>
-            <Button title="카카오로 로그아웃" onPress={handleKakaoLogout} />
-        </View>
+      
+     
     </View>
   );
 };
