@@ -12,7 +12,7 @@ import * as Location from "expo-location";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useAppSelector } from "@/store/hooks";
-import MapView, { Marker } from "react-native-maps";
+
 
 const HomeScreen = () => {
   const router = useRouter();
@@ -54,26 +54,7 @@ const HomeScreen = () => {
   });
   return (
     <View style={styles.container}>
-      {/* Map as Background */}
-         {/* Map */}
-         <MapView
-        style={StyleSheet.absoluteFillObject}
-        region={region}
-        onRegionChangeComplete={(newRegion) => setRegion(newRegion)}
-      >
-        {/* Markers */}
-        {places.map((place) => (
-          <Marker
-            key={place.place_id}
-            coordinate={{
-              latitude: place.lat,
-              longitude: place.lon,
-            }}
-            title={place.place_name}
-            description={place.comment}
-          />
-        ))}
-      </MapView>
+
       {/* Overlay Content */}
       <View style={styles.overlay}>
         {/* Top Content */}

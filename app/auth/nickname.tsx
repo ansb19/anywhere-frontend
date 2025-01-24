@@ -25,6 +25,7 @@ const NicknameScreen = () => {
         const result = window.confirm(message);
         if (result) {
             setShowNicknameInput(true);
+            router.replace('/tabs');
         } else {
             router.replace('/tabs');
         }

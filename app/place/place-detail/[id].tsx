@@ -14,7 +14,7 @@ import { useRouter, useLocalSearchParams, useFocusEffect } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
 import { useAppSelector } from "@/store/hooks";
 import { Place } from "@/types/place";
-import MapView, { Marker } from "react-native-maps";
+
 import { captureRef } from "react-native-view-shot";
 import * as MediaLibrary from "expo-media-library";
 export default function PlaceDetailScreen() {
@@ -177,30 +177,7 @@ export default function PlaceDetailScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Map Section */}
-        <View style={styles.mapContainer}>
-          {region ? (
-            <MapView
-              style={styles.map}
-              region={region}
-              scrollEnabled={false} // 맵 스크롤 비활성화
-              zoomEnabled={false} // 줌 비활성화
-              rotateEnabled={false} // 회전 비활성화
-              pitchEnabled={false} // 3D 피치 비활성화
-            >
-              <Marker
-                coordinate={{
-                  latitude: region.latitude,
-                  longitude: region.longitude,
-                }}
-                title={selectedExamplePlace.place_name}
-                description={selectedExamplePlace.comment}
-              />
-            </MapView>
-          ) : (
-            <Text style={styles.loadingText}>지도를 로드 중입니다...</Text>
-          )}
-        </View>
+     
 
         {/* Photo Carousel */}
         <ScrollView horizontal style={styles.carousel}>
@@ -326,16 +303,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
   },
-  mapContainer: {
-    height: 200,
-    marginHorizontal: 16,
-    marginVertical: 10,
-    borderRadius: 8,
-    overflow: "hidden",
-  },
-  map: {
-    flex: 1,
-  },
+
   loadingText: {
     textAlign: "center",
     marginTop: 20,

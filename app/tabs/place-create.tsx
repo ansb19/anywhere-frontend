@@ -34,8 +34,8 @@ import s3Client from "@/aws/client";
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 import AWS from "aws-sdk";
-import MapScreen from "../../components/map/map";
-import MapView, { Marker } from "react-native-maps";
+
+
 import { createPlace } from "@/services/placeService";
 import { addPlaces } from "@/store/slices/placeSlice";
 
@@ -346,9 +346,7 @@ const PlaceCerateScreen: React.FC = () => {
       <Text style={styles.title}>지도*</Text>
 
       <Text style={styles.title}>가게 위치 선택</Text>
-      <View style={styles.mapContainer}>
-        <MapScreen onLocationSelect={handleLocationSelect} />
-      </View>
+     
       <View style={styles.locationContainer}>
         <Text style={styles.label}>위도: {latitude ?? "미정"}</Text>
         <Text style={styles.label}>경도: {longitude ?? "미정"}</Text>

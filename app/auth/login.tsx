@@ -34,7 +34,7 @@ const LoginScreen = () => {
     // Redux 상태에 사용자 저장
     dispatch(
       login({
-        user_id: 6,
+        user_id: 99,
         account_email: "asw4265@gmail.com",
         nickname: "안승우",
         phone_number: "01094468132",
@@ -48,23 +48,23 @@ const LoginScreen = () => {
     router.replace("./nickname");
   };
 
-const handleKakaoLogin = async () => {
-  try {
-      const response = await axiosInstance.post<{ data: string }>('http://52.78.42.88/user/signup/kakao/url');
-      const kakaoLoginUrl = response.data.data;
-      console.log(kakaoLoginUrl)
-
-      if (kakaoLoginUrl) {
-          // 웹뷰로 리디렉션
-          router.push(`/webview?url=${encodeURIComponent(kakaoLoginUrl)}`);
-      } else {
-          Alert.alert('오류', '카카오 로그인 URL을 가져오는 데 실패했습니다.');
-      }
-  } catch (error) {
-      console.error('카카오 로그인 요청 오류:', error);
-      Alert.alert('오류', '카카오 로그인 요청 중 문제가 발생했습니다.');
-  }
-};
+  const handleKakaoLogin = async () => {
+    try {
+        const response = await axiosInstance.post<{ data: string }>('http://52.78.42.88/user/signup/kakao/url');
+        const kakaoLoginUrl = response.data.data;
+        console.log(kakaoLoginUrl);
+  
+        if (kakaoLoginUrl) {
+            // 현재 페이지에서 직접 리다이렉트
+            window.location.href = kakaoLoginUrl;
+        } else {
+            Alert.alert('오류', '카카오 로그인 URL을 가져오는 데 실패했습니다.');
+        }
+    } catch (error) {
+        console.error('카카오 로그인 요청 오류:', error);
+        Alert.alert('오류', '카카오 로그인 요청 중 문제가 발생했습니다.');
+    }
+  };
 
 
 const checkAutoLogin = async () => {

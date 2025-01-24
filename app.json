@@ -9,7 +9,10 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "runtimeVersion": {
+        "policy": "appVersion"
+      }
     },
     "android": {
       "buildType": "apk",
@@ -17,7 +20,12 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anseungwoo.anywhere"
+      "package": "com.anseungwoo.anywhere",
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.RECORD_AUDIO"
+      ],
+      "runtimeVersion": "1.0.0"
     },
     "web": {
       "bundler": "metro",
@@ -41,11 +49,7 @@
           "photosPermission": "The app accesses your photos to let you share them with your friends."
         }
       ],
-
-     
-        "expo-build-properties"
-       
-     
+      "expo-build-properties"
     ],
     "experiments": {
       "typedRoutes": true
@@ -57,6 +61,9 @@
       "eas": {
         "projectId": "c5e0da3d-a2d4-493a-bb88-d60a7e33f968"
       }
+    },
+    "updates": {
+      "url": "https://u.expo.dev/c5e0da3d-a2d4-493a-bb88-d60a7e33f968"
     }
   }
 }
